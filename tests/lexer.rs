@@ -1,5 +1,5 @@
-use r_interpreter::token;
-use r_interpreter::lexer;
+use r_interpreter::lexer::token;
+use r_interpreter::lexer::lexer;
 
 #[derive(Debug)]
 struct ExpectedToken {

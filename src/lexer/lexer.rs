@@ -1,4 +1,4 @@
-use crate::token;
+use crate::lexer::token;
 use crate::utils;
 
 pub struct Lexer {
