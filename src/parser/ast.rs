@@ -1,31 +1,51 @@
 use crate::lexer::token;
 
 pub enum Node {
-    Program(Program),
     Statement(Statement),
-    Expression(Expression)
+    Expression(Expression),
 }
 
 pub enum Statement {
-    Let(Let)
+    Let(Let),
 }
-pub enum Expression {}
+pub enum Expression {
+    Identifier(Identifier),
+}
 
 pub struct Program {
     pub statements: Vec<Statement>,
 }
 
+pub struct Let {
+    pub token: token::Token,
+    pub name: Box<Identifier>,
+    pub value: Expression,
+}
 pub struct Identifier {
     pub token: token::Token,
     pub value: String,
 }
 
-pub struct Let {
-    pub token: token::Token,
-    pub name: Identifier,
-    pub value: Expression,
+impl Program {
+    fn token_literals(&self) -> String {
+        if self.statements.len() > 0 {
+            match self.statements[0] {
+                Statement::Let(a) => return a.token_literals(),
+            }
+        }
+        "".to_owned()
+    }
 }
 
-impl Program {
-    pub fn token_literals(&mut self) -> () {}
+impl Let {
+    pub fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+    pub fn statement_node(&self) -> () {}
+}
+impl Identifier {
+    pub fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+    pub fn expression_node(&self) -> () {}
 }
