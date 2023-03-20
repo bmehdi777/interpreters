@@ -18,8 +18,8 @@ pub struct Program {
 
 pub struct Let {
     pub token: token::Token,
-    pub name: Box<Identifier>,
-    pub value: Expression,
+    pub name: Option<Identifier>,
+    pub value: Option<Expression>,
 }
 pub struct Identifier {
     pub token: token::Token,
@@ -29,7 +29,7 @@ pub struct Identifier {
 impl Program {
     fn token_literals(&self) -> String {
         if self.statements.len() > 0 {
-            match self.statements[0] {
+            match &self.statements[0] {
                 Statement::Let(a) => return a.token_literals(),
             }
         }
