@@ -6,6 +6,7 @@ pub struct Parser {
     l: Lexer,
     current_token: Token,
     peek_token: Token,
+    errors: Vec<String>,
 }
 
 impl Parser {
@@ -16,9 +17,14 @@ impl Parser {
             l: lexer,
             current_token: cur_tok,
             peek_token: peek_tok,
+            errors: vec![],
         };
 
         cur_parser
+    }
+
+    pub fn errors(&self) -> Vec<String> {
+        self.errors.to_owned()
     }
 
     pub fn next_token(&mut self) -> () {
@@ -46,7 +52,7 @@ impl Parser {
     fn parse_let_statement(&mut self) -> Option<Statement> {
         let mut stmt: Statement = Statement::Let(Let {token: self.current_token.clone(), name: None, value: None});
 
-        if self.expect_peek(TokenType::IDENT) {
+        if !self.expect_peek(TokenType::IDENT) {
             return None;
         }
 
@@ -54,7 +60,7 @@ impl Parser {
             (*st).name = Some(Identifier { token: self.current_token.clone(), value: self.current_token.literal.clone() });
         }
 
-        if self.expect_peek(TokenType::ASSIGN) {
+        if !self.expect_peek(TokenType::ASSIGN) {
             return None;
         }
         
@@ -70,11 +76,17 @@ impl Parser {
     fn peek_token_is(&self, tok: TokenType) -> bool {
         self.peek_token.token_type == tok
     }
+    fn peek_errors(&mut self, tok: TokenType) -> () {
+        let err: String = format!("Next token should be {:?} instead of {:?}.", tok, self.peek_token.token_type);
+        println!("{}", &err);
+        self.errors.push(err);
+    }
     fn expect_peek(&mut self, tok: TokenType) -> bool {
-        if self.peek_token_is(tok) {
+        if self.peek_token_is(tok.to_owned()) {
             self.next_token();
             true
         } else {
+            self.peek_errors(tok);
             false
         }
     }
