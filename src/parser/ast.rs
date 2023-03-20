@@ -1,10 +1,5 @@
 use crate::lexer::token;
 
-pub enum Node {
-    Statement(Statement),
-    Expression(Expression),
-}
-
 #[derive(Debug)]
 pub enum Statement {
     Let(Let),
