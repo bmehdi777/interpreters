@@ -1,6 +1,6 @@
 use crate::lexer::lexer::Lexer;
 use crate::lexer::token::{TokenType, Token};
-use crate::parser::ast::{Statement, Let, Program, Identifier};
+use crate::parser::ast::{Statement, Let, Return, Program, Identifier};
 
 pub struct Parser {
     l: Lexer,
@@ -46,6 +46,7 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.current_token.token_type {
             TokenType::LET => return self.parse_let_statement(),
+            TokenType::RETURN => return self.parse_return_statement(),
             _ => None,
         }
     }
@@ -67,6 +68,17 @@ impl Parser {
         while !self.current_token_is(TokenType::SEMICOLON) {
             self.next_token();
         }
+        Some(stmt)
+    }
+    fn parse_return_statement(&mut self) -> Option<Statement> {
+        let stmt: Statement = Statement::Return(Return {token: self.current_token.clone(), return_value: None});
+
+        self.next_token();
+
+        while !self.current_token_is(TokenType::SEMICOLON) {
+            self.next_token();
+        }
+
         Some(stmt)
     }
 
