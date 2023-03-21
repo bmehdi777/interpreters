@@ -1,5 +1,5 @@
 use r_interpreter::lexer::lexer::Lexer;
-use r_interpreter::parser::ast::{Statement, Program};
+use r_interpreter::parser::ast::{Statement,Let, Program};
 use r_interpreter::parser::parser::Parser;
 
 #[test]
@@ -25,13 +25,10 @@ let foobar = 838383;
 
     for (i, tt) in expected.iter().enumerate() {
         let statement = &program.statements.get(i).expect("Should be a statements");
-        match statement {
-            Statement::Let(l) => {
-                assert!(l.token_literals() == "let", "let.token_literals() not 'let'. got={}", l.token_literals());
-                assert!(l.name.as_ref().unwrap().value == tt.to_owned(), "let.name.value not '{}'. got={}", tt, l.name.as_ref().unwrap().value);
-                assert!(l.name.as_ref().unwrap().token_literals() == tt.to_owned(), "let.name.token_literals() not '{}'. got={}", tt, l.name.as_ref().unwrap().token_literals());
-            },
-            _ => {},
+        if let Statement::Let(l) = statement {
+            assert!(l.token_literals() == "let", "let.token_literals() not 'let'. got={}", l.token_literals());
+            assert!(l.name.as_ref().unwrap().value == tt.to_owned(), "let.name.value not '{}'. got={}", tt, l.name.as_ref().unwrap().value);
+            assert!(l.name.as_ref().unwrap().token_literals() == tt.to_owned(), "let.name.token_literals() not '{}'. got={}", tt, l.name.as_ref().unwrap().token_literals());
         }
     }
 }
