@@ -1,5 +1,5 @@
 use r_interpreter::lexer::lexer::Lexer;
-use r_interpreter::parser::ast::{Statement,Let, Program};
+use r_interpreter::parser::ast::{Node, Statement, Program, Return};
 use r_interpreter::parser::parser::Parser;
 
 #[test]
@@ -39,6 +39,32 @@ fn check_parser_errors(prs: Parser) -> () {
     if err.len() != 0 {
         for e in err.iter() {
             println!("parser error : {}", e);
+        }
+    }
+}
+
+#[test]
+fn test_return_statements() -> () {
+    let input: &str = "
+return 5;
+return 10;
+return 993322;
+        ";
+
+    let l: Lexer = Lexer::new(input.to_owned());
+    let mut p: Parser = Parser::new(l);
+    let program: Program = p.parse_program();
+    check_parser_errors(p);
+
+    assert!(
+        program.statements.len() == 3,
+        "program.statements does not contain 3 statements. got={}",
+        program.statements.len()
+    );
+
+    for stmt in program.statements.iter() {
+        if let Statement::Return(r) = stmt {
+            assert!(r.token_literals() == "return", "return.token_literals() not 'return'. got={}", r.token_literals());
         }
     }
 }
