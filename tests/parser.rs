@@ -1,5 +1,5 @@
 use r_interpreter::lexer::lexer::Lexer;
-use r_interpreter::parser::ast::{Node, Statement, Program, Return};
+use r_interpreter::parser::ast::{Node, Statement, Program, ReturnStatement};
 use r_interpreter::parser::parser::Parser;
 
 #[test]

@@ -6,8 +6,8 @@ pub trait Node {
 
 #[derive(Debug)]
 pub enum Statement {
-    Let(Let),
-    Return(Return),
+    Let(LetStatement),
+    Return(ReturnStatement),
 }
 #[derive(Debug)]
 pub enum Expression {
@@ -19,19 +19,24 @@ pub struct Identifier {
     pub token: Token,
     pub value: String,
 }
+#[derive(Debug)]
+pub struct ExpressionStatement {
+    pub token: Token,
+    pub expression: Expression,
+}
 
 #[derive(Debug)]
 pub struct Program {
     pub statements: Vec<Statement>,
 }
 #[derive(Debug)]
-pub struct Let {
+pub struct LetStatement {
     pub token: Token,
     pub name: Option<Identifier>,
     pub value: Option<Expression>,
 }
 #[derive(Debug)]
-pub struct Return {
+pub struct ReturnStatement {
     pub token: Token,
     pub return_value: Option<Expression>,
 }
@@ -57,21 +62,21 @@ impl Identifier {
     pub fn expression_node(&self) -> () {}
 }
 
-impl Node for Let {
+impl Node for LetStatement {
     fn token_literals(&self) -> String {
         self.token.literal.to_owned()
     }
 
 }
-impl Let {
+impl LetStatement {
     pub fn statement_node(&self) -> () {}
 }
 
-impl Node for Return {
+impl Node for ReturnStatement {
     fn token_literals(&self) -> String {
         self.token.literal.to_owned()
     }
 }
-impl Return {
+impl ReturnStatement {
     pub fn statement_node(&self) -> () {}
 }

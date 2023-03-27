@@ -1,6 +1,6 @@
 use crate::lexer::lexer::Lexer;
 use crate::lexer::token::{TokenType, Token};
-use crate::parser::ast::{Statement, Let, Return, Program, Identifier};
+use crate::parser::ast::{Statement, LetStatement, ReturnStatement, Program, Identifier};
 
 pub struct Parser {
     l: Lexer,
@@ -51,7 +51,7 @@ impl Parser {
         }
     }
     fn parse_let_statement(&mut self) -> Option<Statement> {
-        let mut stmt: Statement = Statement::Let(Let {token: self.current_token.clone(), name: None, value: None});
+        let mut stmt: Statement = Statement::Let(LetStatement {token: self.current_token.clone(), name: None, value: None});
 
         if !self.expect_peek(TokenType::IDENT) {
             return None;
@@ -71,7 +71,7 @@ impl Parser {
         Some(stmt)
     }
     fn parse_return_statement(&mut self) -> Option<Statement> {
-        let stmt: Statement = Statement::Return(Return {token: self.current_token.clone(), return_value: None});
+        let stmt: Statement = Statement::Return(ReturnStatement {token: self.current_token.clone(), return_value: None});
 
         self.next_token();
 
