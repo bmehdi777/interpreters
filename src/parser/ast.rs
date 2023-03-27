@@ -55,7 +55,12 @@ impl Node for Program {
 }
 impl fmt::Display for Program {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for statement in self.statements.iter() {}
+        for statement in self.statements.iter() {
+            match statement {
+                Statement::Let(l) => return l.fmt(f),
+                Statement::Return(r) => return r.fmt(f),
+            }
+        }
         Ok(())
     }
 }
@@ -63,7 +68,7 @@ impl fmt::Display for Program {
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            _ => write!(f, "{}", self),
+            Expression::Identifier(i) => i.fmt(f),
         }
     }
 }
