@@ -1,4 +1,5 @@
 use crate::lexer::token::Token;
+use std::fmt;
 
 pub trait Node {
     fn token_literals(&self) -> String;
@@ -41,18 +42,32 @@ pub struct ReturnStatement {
     pub return_value: Option<Expression>,
 }
 
-
 impl Node for Program {
     fn token_literals(&self) -> String {
         if self.statements.len() > 0 {
             match &self.statements[0] {
                 Statement::Let(a) => return a.token_literals(),
-                _ => {},
+                _ => {}
             }
         }
         "".to_owned()
     }
 }
+impl fmt::Display for Program {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for statement in self.statements.iter() {}
+        Ok(())
+    }
+}
+
+impl fmt::Display for Expression {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            _ => write!(f, "{}", self),
+        }
+    }
+}
+
 impl Node for Identifier {
     fn token_literals(&self) -> String {
         self.token.literal.to_owned()
@@ -61,15 +76,44 @@ impl Node for Identifier {
 impl Identifier {
     pub fn expression_node(&self) -> () {}
 }
+impl fmt::Display for Identifier {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
+impl Node for ExpressionStatement {
+    fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+}
+impl ExpressionStatement {
+    pub fn statement_node(&self) -> () {}
+}
+impl fmt::Display for ExpressionStatement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.expression.fmt(f)
+    }
+}
 
 impl Node for LetStatement {
     fn token_literals(&self) -> String {
         self.token.literal.to_owned()
     }
-
 }
 impl LetStatement {
     pub fn statement_node(&self) -> () {}
+}
+impl fmt::Display for LetStatement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{} {} = {};",
+            self.token_literals(),
+            self.name.as_ref().expect("name shouldn't be empty.").value,
+            self.value.as_ref().expect("value shouldn't be empty.")
+        )
+    }
 }
 
 impl Node for ReturnStatement {
@@ -79,4 +123,16 @@ impl Node for ReturnStatement {
 }
 impl ReturnStatement {
     pub fn statement_node(&self) -> () {}
+}
+impl fmt::Display for ReturnStatement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{} {};",
+            self.token_literals(),
+            self.return_value
+                .as_ref()
+                .expect("return_value shouldn't be empty.")
+        )
+    }
 }
