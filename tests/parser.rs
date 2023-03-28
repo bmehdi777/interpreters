@@ -1,5 +1,5 @@
 use r_interpreter::lexer::lexer::Lexer;
-use r_interpreter::parser::ast::{Node, Statement, Program};
+use r_interpreter::parser::ast::{Node, Statement, Program, Expression, ExpressionStatement};
 use r_interpreter::parser::parser::Parser;
 
 #[test]
@@ -68,3 +68,32 @@ return 993322;
         }
     }
 }
+
+#[test]
+fn test_identifier_expression() -> () {
+    let input: &str = "foobar;";
+
+    let l: Lexer = Lexer::new(input.to_owned());
+    let mut p: Parser = Parser::new(l);
+    let program: Program = p.parse_program();
+    check_parser_errors(p);
+
+    println!("program: {}", program);
+    assert!(program.statements.len() == 1, "program has not enough statements. got={}", program.statements.len());
+
+    println!("Program's content : {}", program);
+    let statement = program.statements.get(0).expect("shouldn't be none.");
+    assert!(matches!(Statement::Expression, statement), "program.statements[0] is not an ast.ExpressionStatement. got={:?}", statement);
+    let ident = if let Statement::Expression(e) = statement {
+        e
+    } else {
+        panic!("Not an expression")
+    };
+
+    let expr: &Expression = ident.expression.as_ref().unwrap();
+    if let Expression::Identifier(i) = expr {
+        assert!(i.value == "foobar", "ident.value not {}. got={}", "foobar", i.value);
+        assert!(i.token_literals() == "foobar", "ident.token_literals not {}. got={}", "foobar", i.token_literals());
+    }
+}
+

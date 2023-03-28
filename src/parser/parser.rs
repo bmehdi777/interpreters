@@ -1,6 +1,19 @@
 use crate::lexer::lexer::Lexer;
 use crate::lexer::token::{TokenType, Token};
-use crate::parser::ast::{Statement, LetStatement, ReturnStatement, Program, Identifier};
+use crate::parser::ast::{Statement, Expression,ExpressionStatement, LetStatement, ReturnStatement, Program, Identifier};
+
+pub enum Precedence {
+    LOWEST,
+    EQUALS, // ==
+    LESSGREATER, // > or <
+    SUM,    // +
+    PRODUCT, // *
+    PREFIX, // -X or !X
+    CALL // myFunction(X)
+}
+
+type PrefixParseFn = fn(&mut Parser)->Expression;
+type InfixParseFn = fn(&mut Parser, Expression)->Expression;
 
 pub struct Parser {
     l: Lexer,
@@ -13,7 +26,7 @@ impl Parser {
     pub fn new(mut lexer: Lexer) -> Parser {
         let cur_tok: Token = lexer.next_token();
         let peek_tok: Token = lexer.next_token();
-        let cur_parser: Parser = Parser {
+        let mut cur_parser: Parser = Parser {
             l: lexer,
             current_token: cur_tok,
             peek_token: peek_tok,
@@ -47,8 +60,28 @@ impl Parser {
         match self.current_token.token_type {
             TokenType::LET => return self.parse_let_statement(),
             TokenType::RETURN => return self.parse_return_statement(),
-            _ => None,
+            _ => return self.parse_expression_statement(),
         }
+    }
+    fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
+        let prefix = self.prefix_call(&self.current_token.token_type).unwrap();
+        let left_expression = prefix(self);
+        
+        Some(left_expression)
+    }
+
+
+    fn parse_expression_statement(&mut self) -> Option<Statement> {
+        let stmt: Statement = Statement::Expression(ExpressionStatement {token: self.current_token.clone(), expression: self.parse_expression(Precedence::LOWEST) }) ;
+
+        if self.peek_token_is(TokenType::SEMICOLON) {
+            self.next_token();
+        }
+
+        Some(stmt)
+    }
+    fn parse_identifier(&mut self) -> Expression {
+        Expression::Identifier(Identifier { token: self.current_token.clone(), value: self.current_token.clone().literal})
     }
     fn parse_let_statement(&mut self) -> Option<Statement> {
         let mut stmt: Statement = Statement::Let(LetStatement {token: self.current_token.clone(), name: None, value: None});
@@ -80,6 +113,18 @@ impl Parser {
         }
 
         Some(stmt)
+    }
+
+    fn prefix_call(&self, token_type: &TokenType) -> Option<PrefixParseFn> {
+        match token_type {
+            TokenType::IDENT => Some(Parser::parse_identifier),
+            _ => None
+        }
+    }
+    fn register_call(&mut self, token_type: TokenType) -> () {
+        match token_type {
+            _ => ()
+        }
     }
 
     fn current_token_is(&self, tok: TokenType) -> bool {

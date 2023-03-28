@@ -9,6 +9,7 @@ pub trait Node {
 pub enum Statement {
     Let(LetStatement),
     Return(ReturnStatement),
+    Expression(ExpressionStatement),
 }
 #[derive(Debug)]
 pub enum Expression {
@@ -23,7 +24,7 @@ pub struct Identifier {
 #[derive(Debug)]
 pub struct ExpressionStatement {
     pub token: Token,
-    pub expression: Expression,
+    pub expression: Option<Expression>,
 }
 
 #[derive(Debug)]
@@ -59,6 +60,7 @@ impl fmt::Display for Program {
             match statement {
                 Statement::Let(l) => return l.fmt(f),
                 Statement::Return(r) => return r.fmt(f),
+                Statement::Expression(e) => return e.fmt(f),
             }
         }
         Ok(())
@@ -97,7 +99,7 @@ impl ExpressionStatement {
 }
 impl fmt::Display for ExpressionStatement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.expression.fmt(f)
+        self.expression.as_ref().expect("Expression should not be empty").fmt(f)
     }
 }
 

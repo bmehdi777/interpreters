@@ -26,5 +26,6 @@ fn test_string() {
             })),
         })],
     };
+    println!("{}", program);
     assert!(format!("{}", program) == "let myVar = anotherVar;")
 }
