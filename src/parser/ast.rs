@@ -15,6 +15,7 @@ pub enum Statement {
 pub enum Expression {
     Identifier(Identifier),
     Integer(IntegerLiteral),
+    Prefix(Prefix),
 }
 
 #[derive(Debug)]
@@ -48,6 +49,12 @@ pub struct IntegerLiteral {
     pub token: Token,
     pub value: i64,
 }
+#[derive(Debug)]
+pub struct Prefix {
+    pub token: Token,
+    pub operator: String,
+    pub right: Box<Expression>
+}
 
 impl Node for Program {
     fn token_literals(&self) -> String {
@@ -78,6 +85,7 @@ impl fmt::Display for Expression {
         match self {
             Expression::Identifier(i) => i.fmt(f),
             Expression::Integer(i) => i.fmt(f),
+            Expression::Prefix(p) => p.fmt(f),
         }
     }
 }
@@ -163,4 +171,19 @@ impl fmt::Display for IntegerLiteral {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.token_literals())
     }
+}
+
+impl Node for Prefix {
+    fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+}
+impl Prefix {
+    pub fn expression_node(&self) -> () {}
+}
+impl fmt::Display for Prefix {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}{})", self.operator, self.right)
+    }
+
 }

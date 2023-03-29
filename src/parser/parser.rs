@@ -1,6 +1,6 @@
 use crate::lexer::lexer::Lexer;
 use crate::lexer::token::{TokenType, Token};
-use crate::parser::ast::{Statement, Expression,ExpressionStatement, LetStatement, ReturnStatement, Program, Identifier, IntegerLiteral};
+use crate::parser::ast::{*};
 
 pub enum Precedence {
     LOWEST,
@@ -64,7 +64,13 @@ impl Parser {
         }
     }
     fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
-        let prefix = self.prefix_call(&self.current_token.token_type).unwrap();
+        let prefix: PrefixParseFn;
+        if let Some(prfx) = self.prefix_call(&self.current_token.token_type) {
+            prefix = prfx;
+        } else {
+            self.no_prefix_parse_fn_err();
+            return None;
+        }
         let left_expression = prefix(self);
         
         Some(left_expression)
@@ -125,11 +131,19 @@ impl Parser {
         }
         lit
     }
+    fn parse_prefix_expression(&mut self) -> Expression {
+        let p: Token = self.current_token.clone();
+        self.next_token();
+        let expr: Expression = Expression::Prefix(Prefix {token: p.clone(), operator: p.literal, right: Box::new(self.parse_expression(Precedence::PREFIX).expect("Expression should not be empty.")) });
+        expr
+    }
 
     fn prefix_call(&self, token_type: &TokenType) -> Option<PrefixParseFn> {
         match token_type {
             TokenType::IDENT => Some(Parser::parse_identifier),
             TokenType::INT => Some(Parser::parse_integer_literal),
+            TokenType::BANG => Some(Parser::parse_prefix_expression),
+            TokenType::MINUS => Some(Parser::parse_prefix_expression),
             _ => None
         }
     }
@@ -146,9 +160,7 @@ impl Parser {
         self.peek_token.token_type == tok
     }
     fn peek_errors(&mut self, tok: TokenType) -> () {
-        let err: String = format!("Next token should be {:?} instead of {:?}.", tok, self.peek_token.token_type);
-        println!("{}", &err);
-        self.errors.push(err);
+        self.errors.push(format!("Next token should be {:?} instead of {:?}.", tok, self.peek_token.token_type));
     }
     fn expect_peek(&mut self, tok: TokenType) -> bool {
         if self.peek_token_is(tok.to_owned()) {
@@ -158,5 +170,9 @@ impl Parser {
             self.peek_errors(tok);
             false
         }
+    }
+
+    fn no_prefix_parse_fn_err(&mut self) -> () {
+        self.errors.push(format!("No prefix parse function for {:?} found",self.current_token.token_type));
     }
 }

@@ -122,3 +122,44 @@ fn test_integer_expression() -> () {
         assert!(i.token_literals() == "5", "ident.token_literals not '{}'. got={}", "5", i.token_literals());
     }
 }
+
+#[test]
+fn test_parsing_prefix_expression() -> () {
+    struct Prefix<'a> {
+        input: &'a str,
+        operator: &'a str,
+        integer_value: i64
+    }
+
+    let prefix_tests: Vec<Prefix> = vec![ Prefix { input: "!5;", operator: "!", integer_value: 5}, Prefix { input: "-15", operator: "-", integer_value: 15}];
+
+    for prefix_test in prefix_tests.iter() {
+        let l: Lexer = Lexer::new(prefix_test.input.to_owned());
+        let mut p: Parser = Parser::new(l);
+        let program: Program = p.parse_program();
+        check_parser_errors(p);
+
+        assert!(program.statements.len() == 1, "program has not enough statements. got={}", program.statements.len());
+
+        let statement = program.statements.get(0).expect("shouldn't be none.");
+        assert!(matches!(Statement::Expression, statement), "program.statements[0] is not an ast.ExpressionStatement. got={:?}", statement);
+        let ident = if let Statement::Expression(e) = statement {
+            e
+        } else {
+            panic!("Not an expression")
+        };
+
+        println!("here");
+        let prfx_exp: &Expression = ident.expression.as_ref().unwrap();
+        if let Expression::Prefix(p) = prfx_exp {
+            assert!(p.operator == prefix_test.operator, "prfx_exp.operator is not '{}'. got={}", prefix_test.operator, p.operator);
+
+            if let Expression::Integer(i) = &*p.right {
+                assert!(i.value == prefix_test.integer_value,"i.value not {}. got={}", prefix_test.integer_value, i.value);
+                assert!(i.token_literals() == prefix_test.integer_value.to_string(),"i.token_literals() not {}. got={}", prefix_test.integer_value.to_string(), i.token_literals());
+            } else {
+                panic!("p.right should be an integer")
+            }
+        }
+    }
+}
