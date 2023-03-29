@@ -114,6 +114,9 @@ impl Parser {
 
         Some(stmt)
     }
+    fn parse_integer_literal(&mut self) -> () {
+        // todo
+    }
 
     fn prefix_call(&self, token_type: &TokenType) -> Option<PrefixParseFn> {
         match token_type {

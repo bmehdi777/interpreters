@@ -14,6 +14,7 @@ pub enum Statement {
 #[derive(Debug)]
 pub enum Expression {
     Identifier(Identifier),
+    Integer(IntegerLiteral),
 }
 
 #[derive(Debug)]
@@ -41,6 +42,11 @@ pub struct LetStatement {
 pub struct ReturnStatement {
     pub token: Token,
     pub return_value: Option<Expression>,
+}
+#[derive(Debug)]
+pub struct IntegerLiteral {
+    pub token: Token,
+    pub value: i64,
 }
 
 impl Node for Program {
@@ -71,6 +77,7 @@ impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Expression::Identifier(i) => i.fmt(f),
+            Expression::Integer(i) => i.fmt(f),
         }
     }
 }
@@ -141,5 +148,19 @@ impl fmt::Display for ReturnStatement {
                 .as_ref()
                 .expect("return_value shouldn't be empty.")
         )
+    }
+}
+
+impl Node for IntegerLiteral {
+    fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+}
+impl IntegerLiteral {
+    pub fn expression_node(&self) -> () {}
+}
+impl fmt::Display for IntegerLiteral {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.token_literals())
     }
 }

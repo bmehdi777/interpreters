@@ -81,7 +81,6 @@ fn test_identifier_expression() -> () {
     println!("program: {}", program);
     assert!(program.statements.len() == 1, "program has not enough statements. got={}", program.statements.len());
 
-    println!("Program's content : {}", program);
     let statement = program.statements.get(0).expect("shouldn't be none.");
     assert!(matches!(Statement::Expression, statement), "program.statements[0] is not an ast.ExpressionStatement. got={:?}", statement);
     let ident = if let Statement::Expression(e) = statement {
@@ -97,3 +96,29 @@ fn test_identifier_expression() -> () {
     }
 }
 
+#[test]
+fn test_integerer_expression() -> () {
+    let input: &str = "5;";
+
+    let l: Lexer = Lexer::new(input.to_owned());
+    let mut p: Parser = Parser::new(l);
+    let program: Program = p.parse_program();
+    check_parser_errors(p);
+
+    println!("program: {}", program);
+    assert!(program.statements.len() == 1, "program has not enough statements. got={}", program.statements.len());
+
+    let statement = program.statements.get(0).expect("shouldn't be none.");
+    assert!(matches!(Statement::Expression, statement), "program.statements[0] is not an ast.ExpressionStatement. got={:?}", statement);
+    let ident = if let Statement::Expression(e) = statement {
+        e
+    } else {
+        panic!("Not an expression")
+    };
+
+    let literal: &Expression = ident.expression.as_ref().unwrap();
+    if let Expression::Integer(i) = expr {
+        assert!(i.value == 5, "ident.value not {}. got={}", "5", i.value);
+        assert!(i.token_literals() == "5", "ident.token_literals not '{}'. got={}", "5", i.token_literals());
+    }
+}
