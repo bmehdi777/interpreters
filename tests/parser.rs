@@ -97,7 +97,7 @@ fn test_identifier_expression() -> () {
 }
 
 #[test]
-fn test_integerer_expression() -> () {
+fn test_integer_expression() -> () {
     let input: &str = "5;";
 
     let l: Lexer = Lexer::new(input.to_owned());
@@ -117,7 +117,7 @@ fn test_integerer_expression() -> () {
     };
 
     let literal: &Expression = ident.expression.as_ref().unwrap();
-    if let Expression::Integer(i) = expr {
+    if let Expression::Integer(i) = literal {
         assert!(i.value == 5, "ident.value not {}. got={}", "5", i.value);
         assert!(i.token_literals() == "5", "ident.token_literals not '{}'. got={}", "5", i.token_literals());
     }

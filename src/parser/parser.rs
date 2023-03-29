@@ -1,6 +1,6 @@
 use crate::lexer::lexer::Lexer;
 use crate::lexer::token::{TokenType, Token};
-use crate::parser::ast::{Statement, Expression,ExpressionStatement, LetStatement, ReturnStatement, Program, Identifier};
+use crate::parser::ast::{Statement, Expression,ExpressionStatement, LetStatement, ReturnStatement, Program, Identifier, IntegerLiteral};
 
 pub enum Precedence {
     LOWEST,
@@ -114,13 +114,22 @@ impl Parser {
 
         Some(stmt)
     }
-    fn parse_integer_literal(&mut self) -> () {
-        // todo
+    fn parse_integer_literal(&mut self) -> Expression {
+        let mut lit: Expression = Expression::Integer(IntegerLiteral { token: self.current_token.clone(), value: 0}) ;
+        if let Ok(value) = self.current_token.literal.parse::<i64>() {
+            if let Expression::Integer(ref mut i) = lit {
+                i.value = value;
+            }
+        } else {
+            self.errors.push(format!("could not parse {} as an integer", self.current_token.literal));
+        }
+        lit
     }
 
     fn prefix_call(&self, token_type: &TokenType) -> Option<PrefixParseFn> {
         match token_type {
             TokenType::IDENT => Some(Parser::parse_identifier),
+            TokenType::INT => Some(Parser::parse_integer_literal),
             _ => None
         }
     }
