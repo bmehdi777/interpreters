@@ -53,7 +53,7 @@ pub struct IntegerLiteral {
 pub struct Prefix {
     pub token: Token,
     pub operator: String,
-    pub right: Box<Expression>
+    pub right: Box<Expression>,
 }
 
 impl Node for Program {
@@ -114,7 +114,10 @@ impl ExpressionStatement {
 }
 impl fmt::Display for ExpressionStatement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.expression.as_ref().expect("Expression should not be empty").fmt(f)
+        self.expression
+            .as_ref()
+            .expect("Expression should not be empty")
+            .fmt(f)
     }
 }
 
@@ -185,5 +188,4 @@ impl fmt::Display for Prefix {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({}{})", self.operator, self.right)
     }
-
 }

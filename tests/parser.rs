@@ -26,9 +26,23 @@ let foobar = 838383;
     for (i, tt) in expected.iter().enumerate() {
         let statement = &program.statements.get(i).expect("Should be a statements");
         if let Statement::Let(l) = statement {
-            assert!(l.token_literals() == "let", "let.token_literals() not 'let'. got={}", l.token_literals());
-            assert!(l.name.as_ref().unwrap().value == tt.to_owned(), "let.name.value not '{}'. got={}", tt, l.name.as_ref().unwrap().value);
-            assert!(l.name.as_ref().unwrap().token_literals() == tt.to_owned(), "let.name.token_literals() not '{}'. got={}", tt, l.name.as_ref().unwrap().token_literals());
+            assert!(
+                l.token_literals() == "let",
+                "let.token_literals() not 'let'. got={}",
+                l.token_literals()
+            );
+            assert!(
+                l.name.as_ref().unwrap().value == tt.to_owned(),
+                "let.name.value not '{}'. got={}",
+                tt,
+                l.name.as_ref().unwrap().value
+            );
+            assert!(
+                l.name.as_ref().unwrap().token_literals() == tt.to_owned(),
+                "let.name.token_literals() not '{}'. got={}",
+                tt,
+                l.name.as_ref().unwrap().token_literals()
+            );
         }
     }
 }
@@ -64,7 +78,11 @@ return 993322;
 
     for stmt in program.statements.iter() {
         if let Statement::Return(r) = stmt {
-            assert!(r.token_literals() == "return", "return.token_literals() not 'return'. got={}", r.token_literals());
+            assert!(
+                r.token_literals() == "return",
+                "return.token_literals() not 'return'. got={}",
+                r.token_literals()
+            );
         }
     }
 }
@@ -79,10 +97,18 @@ fn test_identifier_expression() -> () {
     check_parser_errors(p);
 
     println!("program: {}", program);
-    assert!(program.statements.len() == 1, "program has not enough statements. got={}", program.statements.len());
+    assert!(
+        program.statements.len() == 1,
+        "program has not enough statements. got={}",
+        program.statements.len()
+    );
 
     let statement = program.statements.get(0).expect("shouldn't be none.");
-    assert!(matches!(Statement::Expression, statement), "program.statements[0] is not an ast.ExpressionStatement. got={:?}", statement);
+    assert!(
+        matches!(Statement::Expression, statement),
+        "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
+        statement
+    );
     let ident = if let Statement::Expression(e) = statement {
         e
     } else {
@@ -91,8 +117,18 @@ fn test_identifier_expression() -> () {
 
     let expr: &Expression = ident.expression.as_ref().unwrap();
     if let Expression::Identifier(i) = expr {
-        assert!(i.value == "foobar", "ident.value not {}. got={}", "foobar", i.value);
-        assert!(i.token_literals() == "foobar", "ident.token_literals not {}. got={}", "foobar", i.token_literals());
+        assert!(
+            i.value == "foobar",
+            "ident.value not {}. got={}",
+            "foobar",
+            i.value
+        );
+        assert!(
+            i.token_literals() == "foobar",
+            "ident.token_literals not {}. got={}",
+            "foobar",
+            i.token_literals()
+        );
     }
 }
 
@@ -106,10 +142,18 @@ fn test_integer_expression() -> () {
     check_parser_errors(p);
 
     println!("program: {}", program);
-    assert!(program.statements.len() == 1, "program has not enough statements. got={}", program.statements.len());
+    assert!(
+        program.statements.len() == 1,
+        "program has not enough statements. got={}",
+        program.statements.len()
+    );
 
     let statement = program.statements.get(0).expect("shouldn't be none.");
-    assert!(matches!(Statement::Expression, statement), "program.statements[0] is not an ast.ExpressionStatement. got={:?}", statement);
+    assert!(
+        matches!(Statement::Expression, statement),
+        "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
+        statement
+    );
     let ident = if let Statement::Expression(e) = statement {
         e
     } else {
@@ -119,7 +163,12 @@ fn test_integer_expression() -> () {
     let literal: &Expression = ident.expression.as_ref().unwrap();
     if let Expression::Integer(i) = literal {
         assert!(i.value == 5, "ident.value not {}. got={}", "5", i.value);
-        assert!(i.token_literals() == "5", "ident.token_literals not '{}'. got={}", "5", i.token_literals());
+        assert!(
+            i.token_literals() == "5",
+            "ident.token_literals not '{}'. got={}",
+            "5",
+            i.token_literals()
+        );
     }
 }
 
@@ -128,10 +177,21 @@ fn test_parsing_prefix_expression() -> () {
     struct Prefix<'a> {
         input: &'a str,
         operator: &'a str,
-        integer_value: i64
+        integer_value: i64,
     }
 
-    let prefix_tests: Vec<Prefix> = vec![ Prefix { input: "!5;", operator: "!", integer_value: 5}, Prefix { input: "-15", operator: "-", integer_value: 15}];
+    let prefix_tests: Vec<Prefix> = vec![
+        Prefix {
+            input: "!5;",
+            operator: "!",
+            integer_value: 5,
+        },
+        Prefix {
+            input: "-15",
+            operator: "-",
+            integer_value: 15,
+        },
+    ];
 
     for prefix_test in prefix_tests.iter() {
         let l: Lexer = Lexer::new(prefix_test.input.to_owned());
@@ -139,10 +199,18 @@ fn test_parsing_prefix_expression() -> () {
         let program: Program = p.parse_program();
         check_parser_errors(p);
 
-        assert!(program.statements.len() == 1, "program has not enough statements. got={}", program.statements.len());
+        assert!(
+            program.statements.len() == 1,
+            "program has not enough statements. got={}",
+            program.statements.len()
+        );
 
         let statement = program.statements.get(0).expect("shouldn't be none.");
-        assert!(matches!(Statement::Expression, statement), "program.statements[0] is not an ast.ExpressionStatement. got={:?}", statement);
+        assert!(
+            matches!(Statement::Expression, statement),
+            "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
+            statement
+        );
         let ident = if let Statement::Expression(e) = statement {
             e
         } else {
@@ -151,11 +219,26 @@ fn test_parsing_prefix_expression() -> () {
 
         let prfx_exp: &Expression = ident.expression.as_ref().unwrap();
         if let Expression::Prefix(p) = prfx_exp {
-            assert!(p.operator == prefix_test.operator, "prfx_exp.operator is not '{}'. got={}", prefix_test.operator, p.operator);
+            assert!(
+                p.operator == prefix_test.operator,
+                "prfx_exp.operator is not '{}'. got={}",
+                prefix_test.operator,
+                p.operator
+            );
 
             if let Expression::Integer(i) = &*p.right {
-                assert!(i.value == prefix_test.integer_value,"i.value not {}. got={}", prefix_test.integer_value, i.value);
-                assert!(i.token_literals() == prefix_test.integer_value.to_string(),"i.token_literals() not {}. got={}", prefix_test.integer_value.to_string(), i.token_literals());
+                assert!(
+                    i.value == prefix_test.integer_value,
+                    "i.value not {}. got={}",
+                    prefix_test.integer_value,
+                    i.value
+                );
+                assert!(
+                    i.token_literals() == prefix_test.integer_value.to_string(),
+                    "i.token_literals() not {}. got={}",
+                    prefix_test.integer_value.to_string(),
+                    i.token_literals()
+                );
             } else {
                 panic!("p.right should be an integer")
             }

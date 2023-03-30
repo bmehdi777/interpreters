@@ -17,7 +17,7 @@ pub enum TokenType {
 
     LT,
     GT,
-    
+
     // delimiter
     COMMA,
     SEMICOLON,
@@ -37,10 +37,9 @@ pub enum TokenType {
     RETURN,
     EQ,
     NOTEQ,
-
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct Token {
     pub token_type: TokenType,
     pub literal: String,
@@ -48,7 +47,10 @@ pub struct Token {
 
 impl Token {
     pub fn new(token_type: TokenType, ch: String) -> Token {
-        Token { token_type, literal: ch }
+        Token {
+            token_type,
+            literal: ch,
+        }
     }
     pub fn lookup_ident(ident: &str) -> TokenType {
         match ident {
