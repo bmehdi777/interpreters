@@ -1,5 +1,5 @@
 use r_interpreter::lexer::lexer::Lexer;
-use r_interpreter::parser::ast::{Node, Statement, Program, Expression, ExpressionStatement};
+use r_interpreter::parser::ast::*;
 use r_interpreter::parser::parser::Parser;
 
 #[test]
@@ -149,7 +149,6 @@ fn test_parsing_prefix_expression() -> () {
             panic!("Not an expression")
         };
 
-        println!("here");
         let prfx_exp: &Expression = ident.expression.as_ref().unwrap();
         if let Expression::Prefix(p) = prfx_exp {
             assert!(p.operator == prefix_test.operator, "prfx_exp.operator is not '{}'. got={}", prefix_test.operator, p.operator);
@@ -160,6 +159,8 @@ fn test_parsing_prefix_expression() -> () {
             } else {
                 panic!("p.right should be an integer")
             }
+        } else {
+            panic!("Couldn't parse expression to expression::prefix")
         }
     }
 }
