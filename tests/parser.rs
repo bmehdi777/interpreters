@@ -379,3 +379,37 @@ fn test_parsing_infix_expression() -> () {
         }
     }
 }
+
+#[test]
+fn test_operator_precedence_parsing() -> () {
+    struct PrecedenceTest<'a> {
+        input: &'a str,
+        expected: &'a str
+    }
+
+    let tests: Vec<PrecedenceTest> = vec![
+        PrecedenceTest { input: "-a * b", expected: "((-a) * b)"},
+        PrecedenceTest { input: "!-a", expected: "(!(-a))"},
+        PrecedenceTest { input: "a + b + c", expected: "((a + b) + c)"},
+        PrecedenceTest { input: "a + b - c", expected: "((a + b) - c)"},
+        PrecedenceTest { input: "a * b * c", expected: "((a * b) * c)"},
+        PrecedenceTest { input: "a * b / c", expected: "((a * b) / c)"},
+        PrecedenceTest { input: "a + b * c + d / e - f", expected: "(((a + (b * c)) + (d / e)) - f)"},
+        //PrecedenceTest { input: "3 + 4; -5 * 5", expected: "(3 + 4)((-5) * 5)"},
+        PrecedenceTest { input: "5 > 4 == 3 < 4", expected: "((5 > 4) == (3 < 4))"},
+        PrecedenceTest { input: "5 < 4 != 3 > 4", expected: "((5 < 4) != (3 > 4))"},
+        PrecedenceTest { input: "3 + 4 * 5 == 3 * 1 + 4 * 5", expected: "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+    ];
+
+    for t in tests.iter() {
+        let l: Lexer = Lexer::new(t.input.to_owned());
+        let mut p: Parser = Parser::new(l);
+        let program: Program = p.parse_program();
+        check_parser_errors(p);
+
+        let actual: String = format!("{}", program);
+        println!("Expected = \n{}\n\nActual = \n{}", t.expected, actual);
+        assert!(actual == t.expected, "expected={}. got={}", t.expected, actual);
+
+    }
+}

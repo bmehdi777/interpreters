@@ -209,6 +209,6 @@ impl Infix {
 }
 impl fmt::Display for Infix {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "({}{}{})", self.left, self.operator, self.right)
+        write!(f, "({} {} {})", self.left, self.operator, self.right)
     }
 }
