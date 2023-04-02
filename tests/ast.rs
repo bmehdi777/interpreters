@@ -1,6 +1,5 @@
 use r_interpreter::lexer::token::{Token, TokenType};
 use r_interpreter::parser::ast::*;
-use r_interpreter::parser::parser::Parser;
 
 #[test]
 fn test_string() {

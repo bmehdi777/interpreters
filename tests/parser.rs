@@ -103,13 +103,13 @@ fn test_identifier_expression() -> () {
         program.statements.len()
     );
 
-    let statement = program.statements.get(0).expect("shouldn't be none.");
+    let _statement = program.statements.get(0).expect("shouldn't be none.");
     assert!(
-        matches!(Statement::Expression, statement),
+        matches!(Statement::Expression, _statement),
         "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
-        statement
+        _statement
     );
-    let ident = if let Statement::Expression(e) = statement {
+    let ident = if let Statement::Expression(e) = _statement {
         e
     } else {
         panic!("Not an expression")
@@ -148,13 +148,13 @@ fn test_integer_expression() -> () {
         program.statements.len()
     );
 
-    let statement = program.statements.get(0).expect("shouldn't be none.");
+    let _statement = program.statements.get(0).expect("shouldn't be none.");
     assert!(
-        matches!(Statement::Expression, statement),
+        matches!(Statement::Expression, _statement),
         "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
-        statement
+        _statement
     );
-    let ident = if let Statement::Expression(e) = statement {
+    let ident = if let Statement::Expression(e) = _statement {
         e
     } else {
         panic!("Not an expression")
@@ -205,13 +205,13 @@ fn test_parsing_prefix_expression() -> () {
             program.statements.len()
         );
 
-        let statement = program.statements.get(0).expect("shouldn't be none.");
+        let _statement = program.statements.get(0).expect("shouldn't be none.");
         assert!(
-            matches!(Statement::Expression, statement),
+            matches!(Statement::Expression, _statement),
             "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
-            statement
+            _statement
         );
-        let ident = if let Statement::Expression(e) = statement {
+        let ident = if let Statement::Expression(e) = _statement {
             e
         } else {
             panic!("Not an expression")
@@ -241,6 +241,138 @@ fn test_parsing_prefix_expression() -> () {
                 );
             } else {
                 panic!("p.right should be an integer")
+            }
+        } else {
+            panic!("Couldn't parse expression to expression::prefix")
+        }
+    }
+}
+
+#[test]
+fn test_parsing_infix_expression() -> () {
+    struct Infix<'a> {
+        input: &'a str,
+        left_value: i64,
+        operator: &'a str,
+        right_value: i64,
+    }
+
+    let infix_tests: Vec<Infix> = vec![
+        Infix {
+            input: "5 + 5;",
+            left_value: 5,
+            operator: "+",
+            right_value: 5,
+        },
+        Infix {
+            input: "5 - 5;",
+            left_value: 5,
+            operator: "-",
+            right_value: 5,
+        },
+        Infix {
+            input: "5 * 5;",
+            left_value: 5,
+            operator: "*",
+            right_value: 5,
+        },
+        Infix {
+            input: "5 / 5;",
+            left_value: 5,
+            operator: "/",
+            right_value: 5,
+        },
+        Infix {
+            input: "5 > 5;",
+            left_value: 5,
+            operator: ">",
+            right_value: 5,
+        },
+        Infix {
+            input: "5 < 5;",
+            left_value: 5,
+            operator: "<",
+            right_value: 5,
+        },
+        Infix {
+            input: "5 == 5;",
+            left_value: 5,
+            operator: "==",
+            right_value: 5,
+        },
+        Infix {
+            input: "5 != 5;",
+            left_value: 5,
+            operator: "!=",
+            right_value: 5,
+        },
+    ];
+
+    for infix_test in infix_tests.iter() {
+        let l: Lexer = Lexer::new(infix_test.input.to_owned());
+        let mut p: Parser = Parser::new(l);
+        let program: Program = p.parse_program();
+        check_parser_errors(p);
+
+        assert!(
+            program.statements.len() == 1,
+            "program has not enough statements. got={}",
+            program.statements.len()
+        );
+
+        let _statement = program.statements.get(0).expect("shouldn't be none.");
+        assert!(
+            matches!(Statement::Expression, _statement),
+            "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
+            _statement
+        );
+        let ident = if let Statement::Expression(e) = _statement {
+            e
+        } else {
+            panic!("Not an expression")
+        };
+
+        let infix_exp: &Expression = ident.expression.as_ref().unwrap();
+        if let Expression::Infix(p) = infix_exp {
+            assert!(
+                p.operator == infix_test.operator,
+                "prfx_exp.operator is not '{}'. got={}",
+                infix_test.operator,
+                p.operator
+            );
+
+            if let Expression::Integer(i) = &*p.right {
+                assert!(
+                    i.value == infix_test.left_value,
+                    "i.value not {}. got={}",
+                    infix_test.left_value,
+                    i.value
+                );
+                assert!(
+                    i.token_literals() == infix_test.left_value.to_string(),
+                    "i.token_literals() not {}. got={}",
+                    infix_test.left_value.to_string(),
+                    i.token_literals()
+                );
+            } else {
+                panic!("p.right should be an integer")
+            }
+
+            if let Expression::Integer(i) = &*p.left {
+                assert!(
+                    i.value == infix_test.right_value,
+                    "i.value not {}. got={}",
+                    infix_test.right_value,
+                    i.value
+                );
+                assert!(
+                    i.token_literals() == infix_test.right_value.to_string(),
+                    "i.token_literals() not {}. got={}",
+                    infix_test.right_value.to_string(),
+                    i.token_literals()
+                );
+            } else {
+                panic!("p.left should be an integer")
             }
         } else {
             panic!("Couldn't parse expression to expression::prefix")

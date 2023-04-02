@@ -2,6 +2,7 @@ use crate::lexer::lexer::Lexer;
 use crate::lexer::token::{Token, TokenType};
 use crate::parser::ast::*;
 
+#[derive(PartialEq, PartialOrd)]
 pub enum Precedence {
     LOWEST,
     EQUALS,      // ==
@@ -26,7 +27,7 @@ impl Parser {
     pub fn new(mut lexer: Lexer) -> Parser {
         let cur_tok: Token = lexer.next_token();
         let peek_tok: Token = lexer.next_token();
-        let mut cur_parser: Parser = Parser {
+        let cur_parser: Parser = Parser {
             l: lexer,
             current_token: cur_tok,
             peek_token: peek_tok,
@@ -71,7 +72,18 @@ impl Parser {
             self.no_prefix_parse_fn_err();
             return None;
         }
-        let left_expression = prefix(self);
+        let mut left_expression = prefix(self);
+
+        while !self.peek_token_is(TokenType::SEMICOLON) && precedence < self.peek_precedence() {
+            let infix: InfixParseFn;
+            if let Some(ifx) = self.infix_call(&self.peek_token.token_type) {
+                infix = ifx;
+            } else {
+                return Some(left_expression);
+            }
+            self.next_token();
+            left_expression = infix(self, left_expression);
+        }
 
         Some(left_expression)
     }
@@ -153,17 +165,30 @@ impl Parser {
         lit
     }
     fn parse_prefix_expression(&mut self) -> Expression {
-        let p: Token = self.current_token.clone();
+        let cur_tok: Token = self.current_token.clone();
         self.next_token();
-        let expr: Expression = Expression::Prefix(Prefix {
-            token: p.clone(),
-            operator: p.literal,
+        Expression::Prefix(Prefix {
+            token: cur_tok.clone(),
+            operator: cur_tok.literal,
             right: Box::new(
                 self.parse_expression(Precedence::PREFIX)
                     .expect("Expression should not be empty."),
             ),
-        });
-        expr
+        })
+    }
+    fn parse_infix_expression(&mut self, left_exp: Expression) -> Expression {
+        let cur_tok: Token = self.current_token.clone();
+        let precedence: Precedence = self.current_precedence();
+        self.next_token();
+        Expression::Infix(Infix {
+            token: cur_tok.clone(),
+            operator: cur_tok.literal,
+            left: Box::new(left_exp),
+            right: Box::new(
+                self.parse_expression(precedence)
+                    .expect("Expression should not be empty."),
+            ),
+        })
     }
 
     fn prefix_call(&self, token_type: &TokenType) -> Option<PrefixParseFn> {
@@ -175,11 +200,25 @@ impl Parser {
             _ => None,
         }
     }
-    fn register_call(&mut self, token_type: TokenType) -> () {
+    fn infix_call(&self, token_type: &TokenType) -> Option<InfixParseFn> {
+        match token_type {
+            TokenType::PLUS => Some(Parser::parse_infix_expression),
+            TokenType::MINUS => Some(Parser::parse_infix_expression),
+            TokenType::SLASH => Some(Parser::parse_infix_expression),
+            TokenType::ASTERISK => Some(Parser::parse_infix_expression),
+            TokenType::EQ => Some(Parser::parse_infix_expression),
+            TokenType::NOTEQ => Some(Parser::parse_infix_expression),
+            TokenType::LT => Some(Parser::parse_infix_expression),
+            TokenType::GT => Some(Parser::parse_infix_expression),
+            _ => None,
+        }
+    }
+
+    /*fn register_call(&mut self, token_type: TokenType) -> () {
         match token_type {
             _ => (),
         }
-    }
+    }*/
 
     fn current_token_is(&self, tok: TokenType) -> bool {
         self.current_token.token_type == tok
@@ -208,5 +247,26 @@ impl Parser {
             "No prefix parse function for {:?} found",
             self.current_token.token_type
         ));
+    }
+
+    fn peek_precedence(&self) -> Precedence {
+        Parser::match_precedence_token(&self.peek_token.token_type)
+    }
+    fn current_precedence(&self) -> Precedence {
+        Parser::match_precedence_token(&self.current_token.token_type)
+    }
+
+    fn match_precedence_token(token_type: &TokenType) -> Precedence {
+        match token_type {
+            TokenType::EQ => Precedence::EQUALS,
+            TokenType::NOTEQ => Precedence::EQUALS,
+            TokenType::LT => Precedence::LESSGREATER,
+            TokenType::GT => Precedence::LESSGREATER,
+            TokenType::PLUS => Precedence::SUM,
+            TokenType::MINUS => Precedence::SUM,
+            TokenType::SLASH => Precedence::PRODUCT,
+            TokenType::ASTERISK => Precedence::PRODUCT,
+            _ => Precedence::LOWEST,
+        }
     }
 }
