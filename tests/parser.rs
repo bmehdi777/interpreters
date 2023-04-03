@@ -12,10 +12,10 @@ struct PrecedenceTest<'a> {
     input: &'a str,
     expected: &'a str,
 }
-struct Prefix<'a> {
+struct Prefix<'a, T> {
     input: &'a str,
     operator: &'a str,
-    integer_value: i64,
+    value: T,
 }
 
 #[test]
@@ -186,21 +186,32 @@ fn test_parsing_boolean_expression() -> () {
 
 #[test]
 fn test_parsing_prefix_expression() -> () {
-
-    let prefix_tests: Vec<Prefix> = vec![
+    let prefix_int_tests: Vec<Prefix<i64>> = vec![
         Prefix {
             input: "!5;",
             operator: "!",
-            integer_value: 5,
+            value: 5,
         },
         Prefix {
             input: "-15",
             operator: "-",
-            integer_value: 15,
+            value: 15,
+        },
+    ];
+    let prefix_bool_tests: Vec<Prefix<bool>> = vec![
+        Prefix {
+            input: "!true;",
+            operator: "!",
+            value: false,
+        },
+        Prefix {
+            input: "!false;",
+            operator: "!",
+            value: true,
         },
     ];
 
-    for prefix_test in prefix_tests.iter() {
+    for prefix_test in prefix_int_tests.iter() {
         let l: Lexer = Lexer::new(prefix_test.input.to_owned());
         let mut p: Parser = Parser::new(l);
         let program: Program = p.parse_program();
@@ -233,7 +244,45 @@ fn test_parsing_prefix_expression() -> () {
                 p.operator
             );
 
-            util_test_integer_literal(&*p.right, prefix_test.integer_value);
+            util_test_integer_literal(&*p.right, prefix_test.value);
+        } else {
+            panic!("Couldn't parse expression to expression::prefix")
+        }
+    }
+
+    for prefix_test in prefix_bool_tests.iter() {
+        let l: Lexer = Lexer::new(prefix_test.input.to_owned());
+        let mut p: Parser = Parser::new(l);
+        let program: Program = p.parse_program();
+        check_parser_errors(p);
+
+        assert!(
+            program.statements.len() == 1,
+            "program has not enough statements. got={}",
+            program.statements.len()
+        );
+
+        let _statement = program.statements.get(0).expect("shouldn't be none.");
+        assert!(
+            matches!(Statement::Expression, _statement),
+            "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
+            _statement
+        );
+        let ident = if let Statement::Expression(e) = _statement {
+            e
+        } else {
+            panic!("Not an expression")
+        };
+
+        let prfx_exp: &Expression = ident.expression.as_ref().unwrap();
+        if let Expression::Prefix(p) = prfx_exp {
+            assert!(
+                p.operator == prefix_test.operator,
+                "prfx_exp.operator is not '{}'. got={}",
+                prefix_test.operator,
+                p.operator
+            );
+
         } else {
             panic!("Couldn't parse expression to expression::prefix")
         }
