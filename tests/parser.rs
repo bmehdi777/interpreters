@@ -202,12 +202,12 @@ fn test_parsing_prefix_expression() -> () {
         Prefix {
             input: "!true;",
             operator: "!",
-            value: false,
+            value: true,
         },
         Prefix {
             input: "!false;",
             operator: "!",
-            value: true,
+            value: false,
         },
     ];
 
@@ -283,6 +283,7 @@ fn test_parsing_prefix_expression() -> () {
                 p.operator
             );
 
+            util_test_boolean(&*p.right, prefix_test.value);
         } else {
             panic!("Couldn't parse expression to expression::prefix")
         }
@@ -451,7 +452,6 @@ fn test_parsing_infix_expression() -> () {
 
 #[test]
 fn test_operator_precedence_parsing() -> () {
-
     let tests: Vec<PrecedenceTest> = vec![
         PrecedenceTest {
             input: "-a * b",
@@ -512,6 +512,26 @@ fn test_operator_precedence_parsing() -> () {
         PrecedenceTest {
             input: "3 < 5 == true",
             expected: "((3 < 5) == true)"
+        },
+        PrecedenceTest {
+            input: "1 + (2 + 3) + 4",
+            expected: "((1 + (2 + 3)) + 4)"
+        },
+        PrecedenceTest {
+            input: "(5 + 5) * 2",
+            expected: "((5 + 5) * 2)"
+        },
+        PrecedenceTest {
+            input: "2 / (5 + 5)",
+            expected: "(2 / (5 + 5))"
+        },
+        PrecedenceTest {
+            input: "-(5 + 5)",
+            expected: "(-(5 + 5))"
+        },
+        PrecedenceTest {
+            input: "!(true == true)",
+            expected: "(!(true == true))"
         }
     ];
 
@@ -522,7 +542,6 @@ fn test_operator_precedence_parsing() -> () {
         check_parser_errors(p);
 
         let actual: String = format!("{}", program);
-        println!("Expected = \n{}\n\nActual = \n{}", t.expected, actual);
         assert!(
             actual == t.expected,
             "expected={}. got={}",
@@ -581,10 +600,8 @@ fn util_test_boolean(exp: &Expression, value: bool) {
 }
 fn check_parser_errors(prs: Parser) -> () {
     let err: Vec<String> = prs.errors();
-    assert!(err.len() == 0, "parser has {} errors.", err.len());
-    if err.len() != 0 {
-        for e in err.iter() {
-            println!("parser error : {}", e);
-        }
+    for e in err.iter() {
+        println!("parser error : {}", e);
     }
+    assert!(err.len() == 0, "parser has {} errors.", err.len());
 }

@@ -196,6 +196,14 @@ impl Parser {
             ),
         })
     }
+    fn parse_grouped_expression(&mut self) -> Expression {
+        self.next_token();
+        let exp = self.parse_expression(Precedence::LOWEST);
+        if !self.expect_peek(TokenType::RPAREN) {
+            self.errors.push(format!("could not parse {}, a right parenthesis is missing", self.current_token.literal))
+        }
+        exp.expect("exp should not be empty")
+    }
 
     fn prefix_call(&self, token_type: &TokenType) -> Option<PrefixParseFn> {
         match token_type {
@@ -204,6 +212,7 @@ impl Parser {
             TokenType::TRUE | TokenType::FALSE => Some(Parser::parse_boolean),
             TokenType::BANG => Some(Parser::parse_prefix_expression),
             TokenType::MINUS => Some(Parser::parse_prefix_expression),
+            TokenType::LPAREN => Some(Parser::parse_grouped_expression),
             _ => None,
         }
     }
