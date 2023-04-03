@@ -47,7 +47,6 @@ let foobar = 838383;
     }
 }
 
-
 #[test]
 fn test_return_statements() -> () {
     let input: &str = "
@@ -167,7 +166,6 @@ fn test_parsing_boolean_expression() -> () {
         panic!("Not an expression")
     };
     util_test_boolean(ident.expression.as_ref().unwrap(), true);
-
 }
 
 #[test]
@@ -335,21 +333,54 @@ fn test_parsing_infix_expression() -> () {
 fn test_operator_precedence_parsing() -> () {
     struct PrecedenceTest<'a> {
         input: &'a str,
-        expected: &'a str
+        expected: &'a str,
     }
 
     let tests: Vec<PrecedenceTest> = vec![
-        PrecedenceTest { input: "-a * b", expected: "((-a) * b)"},
-        PrecedenceTest { input: "!-a", expected: "(!(-a))"},
-        PrecedenceTest { input: "a + b + c", expected: "((a + b) + c)"},
-        PrecedenceTest { input: "a + b - c", expected: "((a + b) - c)"},
-        PrecedenceTest { input: "a * b * c", expected: "((a * b) * c)"},
-        PrecedenceTest { input: "a * b / c", expected: "((a * b) / c)"},
-        PrecedenceTest { input: "a + b * c + d / e - f", expected: "(((a + (b * c)) + (d / e)) - f)"},
-        PrecedenceTest { input: "3 + 4 - 5 * 5", expected: "((3 + 4) - (5 * 5))"},
-        PrecedenceTest { input: "5 > 4 == 3 < 4", expected: "((5 > 4) == (3 < 4))"},
-        PrecedenceTest { input: "5 < 4 != 3 > 4", expected: "((5 < 4) != (3 > 4))"},
-        PrecedenceTest { input: "3 + 4 * 5 == 3 * 1 + 4 * 5", expected: "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+        PrecedenceTest {
+            input: "-a * b",
+            expected: "((-a) * b)",
+        },
+        PrecedenceTest {
+            input: "!-a",
+            expected: "(!(-a))",
+        },
+        PrecedenceTest {
+            input: "a + b + c",
+            expected: "((a + b) + c)",
+        },
+        PrecedenceTest {
+            input: "a + b - c",
+            expected: "((a + b) - c)",
+        },
+        PrecedenceTest {
+            input: "a * b * c",
+            expected: "((a * b) * c)",
+        },
+        PrecedenceTest {
+            input: "a * b / c",
+            expected: "((a * b) / c)",
+        },
+        PrecedenceTest {
+            input: "a + b * c + d / e - f",
+            expected: "(((a + (b * c)) + (d / e)) - f)",
+        },
+        PrecedenceTest {
+            input: "3 + 4 - 5 * 5",
+            expected: "((3 + 4) - (5 * 5))",
+        },
+        PrecedenceTest {
+            input: "5 > 4 == 3 < 4",
+            expected: "((5 > 4) == (3 < 4))",
+        },
+        PrecedenceTest {
+            input: "5 < 4 != 3 > 4",
+            expected: "((5 < 4) != (3 > 4))",
+        },
+        PrecedenceTest {
+            input: "3 + 4 * 5 == 3 * 1 + 4 * 5",
+            expected: "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+        },
     ];
 
     for t in tests.iter() {
@@ -360,15 +391,29 @@ fn test_operator_precedence_parsing() -> () {
 
         let actual: String = format!("{}", program);
         println!("Expected = \n{}\n\nActual = \n{}", t.expected, actual);
-        assert!(actual == t.expected, "expected={}. got={}", t.expected, actual);
-
+        assert!(
+            actual == t.expected,
+            "expected={}. got={}",
+            t.expected,
+            actual
+        );
     }
 }
 
 fn util_test_integer_literal(exp: &Expression, value: i64) -> () {
     if let Expression::Integer(intg) = exp {
-    assert!(intg.value == value, "intg.value not {}. got={}", value, intg.value);
-    assert!(intg.token_literals() == format!("{}", value), "intg.token_literals() not {}. got={}", value, intg.token_literals());
+        assert!(
+            intg.value == value,
+            "intg.value not {}. got={}",
+            value,
+            intg.value
+        );
+        assert!(
+            intg.token_literals() == format!("{}", value),
+            "intg.token_literals() not {}. got={}",
+            value,
+            intg.token_literals()
+        );
     } else {
         panic!("exp should be an Integer");
     };
@@ -394,7 +439,12 @@ fn util_test_identifier(exp: &Expression, value: String) -> () {
 fn util_test_boolean(exp: &Expression, value: bool) {
     if let Expression::Boolean(b) = exp {
         assert!(b.value == value, "b.value not {}. got={}", value, b.value);
-        assert!(b.token_literals() == format!("{}", value), "b.token_literals() not {}. got={}", value, b.token_literals());
+        assert!(
+            b.token_literals() == format!("{}", value),
+            "b.token_literals() not {}. got={}",
+            value,
+            b.token_literals()
+        );
     }
 }
 fn check_parser_errors(prs: Parser) -> () {

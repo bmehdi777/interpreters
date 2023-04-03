@@ -55,7 +55,7 @@ pub struct IntegerLiteral {
 #[derive(Debug)]
 pub struct Boolean {
     pub token: Token,
-    pub value: bool
+    pub value: bool,
 }
 #[derive(Debug)]
 pub struct Prefix {
@@ -91,7 +91,9 @@ impl fmt::Display for Program {
                 Statement::Expression(e) => return e.fmt(f),
             }
         }
-        Ok(()) } }
+        Ok(())
+    }
+}
 
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

@@ -109,7 +109,7 @@ impl Parser {
     fn parse_boolean(&mut self) -> Expression {
         Expression::Boolean(Boolean {
             token: self.current_token.clone(),
-            value: self.current_token_is(TokenType::TRUE)
+            value: self.current_token_is(TokenType::TRUE),
         })
     }
     fn parse_let_statement(&mut self) -> Option<Statement> {
