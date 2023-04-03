@@ -47,15 +47,6 @@ let foobar = 838383;
     }
 }
 
-fn check_parser_errors(prs: Parser) -> () {
-    let err: Vec<String> = prs.errors();
-    assert!(err.len() == 0, "parser has {} errors.", err.len());
-    if err.len() != 0 {
-        for e in err.iter() {
-            println!("parser error : {}", e);
-        }
-    }
-}
 
 #[test]
 fn test_return_statements() -> () {
@@ -115,21 +106,7 @@ fn test_identifier_expression() -> () {
         panic!("Not an expression")
     };
 
-    let expr: &Expression = ident.expression.as_ref().unwrap();
-    if let Expression::Identifier(i) = expr {
-        assert!(
-            i.value == "foobar",
-            "ident.value not {}. got={}",
-            "foobar",
-            i.value
-        );
-        assert!(
-            i.token_literals() == "foobar",
-            "ident.token_literals not {}. got={}",
-            "foobar",
-            i.token_literals()
-        );
-    }
+    util_test_identifier(ident.expression.as_ref().unwrap(), "foobar".to_owned());
 }
 
 #[test]
@@ -160,16 +137,7 @@ fn test_integer_expression() -> () {
         panic!("Not an expression")
     };
 
-    let literal: &Expression = ident.expression.as_ref().unwrap();
-    if let Expression::Integer(i) = literal {
-        assert!(i.value == 5, "ident.value not {}. got={}", "5", i.value);
-        assert!(
-            i.token_literals() == "5",
-            "ident.token_literals not '{}'. got={}",
-            "5",
-            i.token_literals()
-        );
-    }
+    util_test_integer_literal(ident.expression.as_ref().unwrap(), 5);
 }
 
 #[test]
@@ -226,22 +194,7 @@ fn test_parsing_prefix_expression() -> () {
                 p.operator
             );
 
-            if let Expression::Integer(i) = &*p.right {
-                assert!(
-                    i.value == prefix_test.integer_value,
-                    "i.value not {}. got={}",
-                    prefix_test.integer_value,
-                    i.value
-                );
-                assert!(
-                    i.token_literals() == prefix_test.integer_value.to_string(),
-                    "i.token_literals() not {}. got={}",
-                    prefix_test.integer_value.to_string(),
-                    i.token_literals()
-                );
-            } else {
-                panic!("p.right should be an integer")
-            }
+            util_test_integer_literal(&*p.right, prefix_test.integer_value);
         } else {
             panic!("Couldn't parse expression to expression::prefix")
         }
@@ -340,40 +293,8 @@ fn test_parsing_infix_expression() -> () {
                 infix_test.operator,
                 p.operator
             );
-
-            if let Expression::Integer(i) = &*p.right {
-                assert!(
-                    i.value == infix_test.left_value,
-                    "i.value not {}. got={}",
-                    infix_test.left_value,
-                    i.value
-                );
-                assert!(
-                    i.token_literals() == infix_test.left_value.to_string(),
-                    "i.token_literals() not {}. got={}",
-                    infix_test.left_value.to_string(),
-                    i.token_literals()
-                );
-            } else {
-                panic!("p.right should be an integer")
-            }
-
-            if let Expression::Integer(i) = &*p.left {
-                assert!(
-                    i.value == infix_test.right_value,
-                    "i.value not {}. got={}",
-                    infix_test.right_value,
-                    i.value
-                );
-                assert!(
-                    i.token_literals() == infix_test.right_value.to_string(),
-                    "i.token_literals() not {}. got={}",
-                    infix_test.right_value.to_string(),
-                    i.token_literals()
-                );
-            } else {
-                panic!("p.left should be an integer")
-            }
+            util_test_integer_literal(&*p.left, infix_test.left_value);
+            util_test_integer_literal(&*p.right, infix_test.right_value);
         } else {
             panic!("Couldn't parse expression to expression::prefix")
         }
@@ -395,7 +316,7 @@ fn test_operator_precedence_parsing() -> () {
         PrecedenceTest { input: "a * b * c", expected: "((a * b) * c)"},
         PrecedenceTest { input: "a * b / c", expected: "((a * b) / c)"},
         PrecedenceTest { input: "a + b * c + d / e - f", expected: "(((a + (b * c)) + (d / e)) - f)"},
-        //PrecedenceTest { input: "3 + 4; -5 * 5", expected: "(3 + 4)((-5) * 5)"},
+        PrecedenceTest { input: "3 + 4 - 5 * 5", expected: "((3 + 4) - (5 * 5))"},
         PrecedenceTest { input: "5 > 4 == 3 < 4", expected: "((5 > 4) == (3 < 4))"},
         PrecedenceTest { input: "5 < 4 != 3 > 4", expected: "((5 < 4) != (3 > 4))"},
         PrecedenceTest { input: "3 + 4 * 5 == 3 * 1 + 4 * 5", expected: "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
@@ -411,5 +332,41 @@ fn test_operator_precedence_parsing() -> () {
         println!("Expected = \n{}\n\nActual = \n{}", t.expected, actual);
         assert!(actual == t.expected, "expected={}. got={}", t.expected, actual);
 
+    }
+}
+
+fn util_test_integer_literal(exp: &Expression, value: i64) -> () {
+    if let Expression::Integer(intg) = exp {
+    assert!(intg.value == value, "intg.value not {}. got={}", value, intg.value);
+    assert!(intg.token_literals() == format!("{}", value), "intg.token_literals() not {}. got={}", value, intg.token_literals());
+    } else {
+        panic!("exp should be an Integer");
+    };
+}
+fn util_test_identifier(exp: &Expression, value: String) -> () {
+    if let Expression::Identifier(ident) = exp {
+        assert!(
+            ident.value == value,
+            "ident.value not {}. got={}",
+            value,
+            ident.value
+        );
+        assert!(
+            ident.token_literals() == value,
+            "ident.token_literals not {}. got={}",
+            value,
+            ident.token_literals()
+        );
+    } else {
+        panic!("exp should be a Identifier");
+    }
+}
+fn check_parser_errors(prs: Parser) -> () {
+    let err: Vec<String> = prs.errors();
+    assert!(err.len() == 0, "parser has {} errors.", err.len());
+    if err.len() != 0 {
+        for e in err.iter() {
+            println!("parser error : {}", e);
+        }
     }
 }
