@@ -2,6 +2,22 @@ use r_interpreter::lexer::lexer::Lexer;
 use r_interpreter::parser::ast::*;
 use r_interpreter::parser::parser::Parser;
 
+struct Infix<'a, T> {
+    input: &'a str,
+    left_value: T,
+    operator: &'a str,
+    right_value: T,
+}
+struct PrecedenceTest<'a> {
+    input: &'a str,
+    expected: &'a str,
+}
+struct Prefix<'a> {
+    input: &'a str,
+    operator: &'a str,
+    integer_value: i64,
+}
+
 #[test]
 fn test_let_statements() -> () {
     let input: &str = "
@@ -170,11 +186,6 @@ fn test_parsing_boolean_expression() -> () {
 
 #[test]
 fn test_parsing_prefix_expression() -> () {
-    struct Prefix<'a> {
-        input: &'a str,
-        operator: &'a str,
-        integer_value: i64,
-    }
 
     let prefix_tests: Vec<Prefix> = vec![
         Prefix {
@@ -231,14 +242,7 @@ fn test_parsing_prefix_expression() -> () {
 
 #[test]
 fn test_parsing_infix_expression() -> () {
-    struct Infix<'a> {
-        input: &'a str,
-        left_value: i64,
-        operator: &'a str,
-        right_value: i64,
-    }
-
-    let infix_tests: Vec<Infix> = vec![
+    let infix_int_tests: Vec<Infix<i64>> = vec![
         Infix {
             input: "5 + 5;",
             left_value: 5,
@@ -289,7 +293,34 @@ fn test_parsing_infix_expression() -> () {
         },
     ];
 
-    for infix_test in infix_tests.iter() {
+    let infix_bool_tests: Vec<Infix<bool>> = vec![
+        Infix {
+            input: "true == true;",
+            left_value: true,
+            operator: "==",
+            right_value: true,
+        },
+        Infix {
+            input: "true != true;",
+            left_value: true,
+            operator: "!=",
+            right_value: true,
+        },
+        Infix {
+            input: "false != false;",
+            left_value: false,
+            operator: "!=",
+            right_value: false,
+        },
+        Infix {
+            input: "false == false;",
+            left_value: false,
+            operator: "==",
+            right_value: false,
+        },
+    ];
+
+    for infix_test in infix_int_tests.iter() {
         let l: Lexer = Lexer::new(infix_test.input.to_owned());
         let mut p: Parser = Parser::new(l);
         let program: Program = p.parse_program();
@@ -327,14 +358,50 @@ fn test_parsing_infix_expression() -> () {
             panic!("Couldn't parse expression to expression::prefix")
         }
     }
+
+    for infix_test in infix_bool_tests.iter() {
+        let l: Lexer = Lexer::new(infix_test.input.to_owned());
+        let mut p: Parser = Parser::new(l);
+        let program: Program = p.parse_program();
+        check_parser_errors(p);
+
+        assert!(
+            program.statements.len() == 1,
+            "program has not enough statements. got={}",
+            program.statements.len()
+        );
+
+        let _statement = program.statements.get(0).expect("shouldn't be none.");
+        assert!(
+            matches!(Statement::Expression, _statement),
+            "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
+            _statement
+        );
+        let ident = if let Statement::Expression(e) = _statement {
+            e
+        } else {
+            panic!("Not an expression")
+        };
+
+        let infix_exp: &Expression = ident.expression.as_ref().unwrap();
+        if let Expression::Infix(p) = infix_exp {
+            assert!(
+                p.operator == infix_test.operator,
+                "prfx_exp.operator is not '{}'. got={}",
+                infix_test.operator,
+                p.operator
+            );
+            util_test_boolean(&*p.left, infix_test.left_value);
+            util_test_boolean(&*p.right, infix_test.right_value);
+        } else {
+            panic!("Couldn't parse expression to expression::prefix")
+        }
+
+    }
 }
 
 #[test]
 fn test_operator_precedence_parsing() -> () {
-    struct PrecedenceTest<'a> {
-        input: &'a str,
-        expected: &'a str,
-    }
 
     let tests: Vec<PrecedenceTest> = vec![
         PrecedenceTest {
@@ -381,6 +448,22 @@ fn test_operator_precedence_parsing() -> () {
             input: "3 + 4 * 5 == 3 * 1 + 4 * 5",
             expected: "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
         },
+        PrecedenceTest {
+            input: "true",
+            expected: "true"
+        },
+        PrecedenceTest {
+            input: "false",
+            expected: "false",
+        }, 
+        PrecedenceTest {
+            input: "3 > 5 == false",
+            expected: "((3 > 5) == false)"
+        },
+        PrecedenceTest {
+            input: "3 < 5 == true",
+            expected: "((3 < 5) == true)"
+        }
     ];
 
     for t in tests.iter() {
