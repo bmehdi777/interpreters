@@ -139,6 +139,36 @@ fn test_integer_expression() -> () {
 
     util_test_integer_literal(ident.expression.as_ref().unwrap(), 5);
 }
+#[test]
+fn test_parsing_boolean_expression() -> () {
+    let input: &str = "true;";
+
+    let l: Lexer = Lexer::new(input.to_owned());
+    let mut p: Parser = Parser::new(l);
+    let program: Program = p.parse_program();
+    check_parser_errors(p);
+
+    println!("program: {}", program);
+    assert!(
+        program.statements.len() == 1,
+        "program has not enough statements. got={}",
+        program.statements.len()
+    );
+
+    let _statement = program.statements.get(0).expect("shouldn't be none.");
+    assert!(
+        matches!(Statement::Expression, _statement),
+        "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
+        _statement
+    );
+    let ident = if let Statement::Expression(e) = _statement {
+        e
+    } else {
+        panic!("Not an expression")
+    };
+    util_test_boolean(ident.expression.as_ref().unwrap(), true);
+
+}
 
 #[test]
 fn test_parsing_prefix_expression() -> () {
@@ -359,6 +389,12 @@ fn util_test_identifier(exp: &Expression, value: String) -> () {
         );
     } else {
         panic!("exp should be a Identifier");
+    }
+}
+fn util_test_boolean(exp: &Expression, value: bool) {
+    if let Expression::Boolean(b) = exp {
+        assert!(b.value == value, "b.value not {}. got={}", value, b.value);
+        assert!(b.token_literals() == format!("{}", value), "b.token_literals() not {}. got={}", value, b.token_literals());
     }
 }
 fn check_parser_errors(prs: Parser) -> () {

@@ -106,6 +106,12 @@ impl Parser {
             value: self.current_token.clone().literal,
         })
     }
+    fn parse_boolean(&mut self) -> Expression {
+        Expression::Boolean(Boolean {
+            token: self.current_token.clone(),
+            value: self.current_token_is(TokenType::TRUE)
+        })
+    }
     fn parse_let_statement(&mut self) -> Option<Statement> {
         let mut stmt: Statement = Statement::Let(LetStatement {
             token: self.current_token.clone(),
@@ -195,6 +201,7 @@ impl Parser {
         match token_type {
             TokenType::IDENT => Some(Parser::parse_identifier),
             TokenType::INT => Some(Parser::parse_integer_literal),
+            TokenType::TRUE | TokenType::FALSE => Some(Parser::parse_boolean),
             TokenType::BANG => Some(Parser::parse_prefix_expression),
             TokenType::MINUS => Some(Parser::parse_prefix_expression),
             _ => None,

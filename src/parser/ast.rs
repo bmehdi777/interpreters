@@ -15,6 +15,8 @@ pub enum Statement {
 pub enum Expression {
     Identifier(Identifier),
     Integer(IntegerLiteral),
+    Boolean(Boolean),
+
     Prefix(Prefix),
     Infix(Infix),
 }
@@ -51,6 +53,11 @@ pub struct IntegerLiteral {
     pub value: i64,
 }
 #[derive(Debug)]
+pub struct Boolean {
+    pub token: Token,
+    pub value: bool
+}
+#[derive(Debug)]
 pub struct Prefix {
     pub token: Token,
     pub operator: String,
@@ -84,15 +91,14 @@ impl fmt::Display for Program {
                 Statement::Expression(e) => return e.fmt(f),
             }
         }
-        Ok(())
-    }
-}
+        Ok(()) } }
 
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Expression::Identifier(i) => i.fmt(f),
             Expression::Integer(i) => i.fmt(f),
+            Expression::Boolean(b) => b.fmt(f),
             Expression::Prefix(p) => p.fmt(f),
             Expression::Infix(i) => i.fmt(f),
         }
@@ -180,6 +186,20 @@ impl IntegerLiteral {
     pub fn expression_node(&self) -> () {}
 }
 impl fmt::Display for IntegerLiteral {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.token_literals())
+    }
+}
+
+impl Node for Boolean {
+    fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+}
+impl Boolean {
+    pub fn expression_node(&self) -> () {}
+}
+impl fmt::Display for Boolean {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.token_literals())
     }
