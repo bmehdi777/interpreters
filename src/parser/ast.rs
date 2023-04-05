@@ -16,6 +16,7 @@ pub enum Expression {
     Identifier(Identifier),
     Integer(IntegerLiteral),
     Boolean(Boolean),
+    If(IfExpression),
 
     Prefix(Prefix),
     Infix(Infix),
@@ -56,6 +57,18 @@ pub struct IntegerLiteral {
 pub struct Boolean {
     pub token: Token,
     pub value: bool,
+}
+#[derive(Debug)]
+pub struct IfExpression {
+    pub token: Token,
+    pub condition: Box<Expression>,
+    pub consequence: BlockStatement,
+    pub alternative: Option<BlockStatement>,
+}
+#[derive(Debug)]
+pub struct BlockStatement {
+    pub token: Token,
+    pub statements: Vec<Statement>,
 }
 #[derive(Debug)]
 pub struct Prefix {
@@ -101,8 +114,19 @@ impl fmt::Display for Expression {
             Expression::Identifier(i) => i.fmt(f),
             Expression::Integer(i) => i.fmt(f),
             Expression::Boolean(b) => b.fmt(f),
+            Expression::If(i) => i.fmt(f),
             Expression::Prefix(p) => p.fmt(f),
             Expression::Infix(i) => i.fmt(f),
+        }
+    }
+}
+
+impl fmt::Display for Statement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Statement::Let(l) => l.fmt(f),
+            Statement::Return(r) => r.fmt(f),
+            Statement::Expression(e) => e.fmt(f),
         }
     }
 }
@@ -232,5 +256,42 @@ impl Infix {
 impl fmt::Display for Infix {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({} {} {})", self.left, self.operator, self.right)
+    }
+}
+
+impl Node for IfExpression {
+    fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+}
+impl IfExpression {
+    pub fn expression_node(&self) -> () {}
+}
+impl fmt::Display for IfExpression {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if let Some(b) = &self.alternative {
+            write!(f, "if {} {} else {}",self.condition, self.consequence, b)
+        } else {
+            write!(f, "if {} {}",self.condition, self.consequence)
+        }
+
+    }
+}
+
+impl Node for BlockStatement {
+    fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+}
+impl BlockStatement {
+    pub fn statement_node(&self) -> () {}
+}
+impl fmt::Display for BlockStatement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut bs: String = String::new();
+        for statement in self.statements.iter() {
+            bs.push_str(format!("{}", statement).as_str());
+        }
+        write!(f,"{}", bs)
     }
 }
