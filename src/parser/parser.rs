@@ -41,7 +41,7 @@ impl Parser {
         self.errors.to_owned()
     }
 
-    pub fn next_token(&mut self) -> () {
+    pub fn next_token(&mut self)  {
         self.current_token = self.peek_token.clone();
         self.peek_token = self.l.next_token();
     }
@@ -230,7 +230,7 @@ impl Parser {
         }
     }
 
-    /*fn register_call(&mut self, token_type: TokenType) -> () {
+    /*fn register_call(&mut self, token_type: TokenType)  {
         match token_type {
             _ => (),
         }
@@ -242,7 +242,7 @@ impl Parser {
     fn peek_token_is(&self, tok: TokenType) -> bool {
         self.peek_token.token_type == tok
     }
-    fn peek_errors(&mut self, tok: TokenType) -> () {
+    fn peek_errors(&mut self, tok: TokenType)  {
         self.errors.push(format!(
             "Next token should be {:?} instead of {:?}.",
             tok, self.peek_token.token_type
@@ -258,7 +258,7 @@ impl Parser {
         }
     }
 
-    fn no_prefix_parse_fn_err(&mut self) -> () {
+    fn no_prefix_parse_fn_err(&mut self)  {
         self.errors.push(format!(
             "No prefix parse function for {:?} found",
             self.current_token.token_type

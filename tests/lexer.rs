@@ -8,7 +8,7 @@ struct ExpectedToken {
 }
 
 #[test]
-fn test_next_token_1() -> () {
+fn test_next_token_1()  {
     let input: &str = "=+(){},;";
     let test: Vec<ExpectedToken> = vec![
         ExpectedToken {
@@ -70,7 +70,7 @@ fn test_next_token_1() -> () {
 }
 
 #[test]
-fn test_next_token_2() -> () {
+fn test_next_token_2()  {
     let input: &str = "
         let five = 5;
         let ten = 10;
@@ -249,7 +249,7 @@ fn test_next_token_2() -> () {
 }
 
 #[test]
-fn test_next_token_3() -> () {
+fn test_next_token_3()  {
     let input: &str = "
         !-/*5;
         5 < 10 > 5;";
@@ -326,7 +326,7 @@ fn test_next_token_3() -> () {
 }
 
 #[test]
-fn test_next_token_4() -> () {
+fn test_next_token_4()  {
     let input: &str = "
         if (5 < 10) {
             return true;

@@ -137,7 +137,7 @@ impl Node for Identifier {
     }
 }
 impl Identifier {
-    pub fn expression_node(&self) -> () {}
+    pub fn expression_node(&self)  {}
 }
 impl fmt::Display for Identifier {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -151,7 +151,7 @@ impl Node for ExpressionStatement {
     }
 }
 impl ExpressionStatement {
-    pub fn statement_node(&self) -> () {}
+    pub fn statement_node(&self)  {}
 }
 impl fmt::Display for ExpressionStatement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -168,7 +168,7 @@ impl Node for LetStatement {
     }
 }
 impl LetStatement {
-    pub fn statement_node(&self) -> () {}
+    pub fn statement_node(&self)  {}
 }
 impl fmt::Display for LetStatement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -188,7 +188,7 @@ impl Node for ReturnStatement {
     }
 }
 impl ReturnStatement {
-    pub fn statement_node(&self) -> () {}
+    pub fn statement_node(&self)  {}
 }
 impl fmt::Display for ReturnStatement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -209,7 +209,7 @@ impl Node for IntegerLiteral {
     }
 }
 impl IntegerLiteral {
-    pub fn expression_node(&self) -> () {}
+    pub fn expression_node(&self)  {}
 }
 impl fmt::Display for IntegerLiteral {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -223,7 +223,7 @@ impl Node for Boolean {
     }
 }
 impl Boolean {
-    pub fn expression_node(&self) -> () {}
+    pub fn expression_node(&self)  {}
 }
 impl fmt::Display for Boolean {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -237,7 +237,7 @@ impl Node for Prefix {
     }
 }
 impl Prefix {
-    pub fn expression_node(&self) -> () {}
+    pub fn expression_node(&self)  {}
 }
 impl fmt::Display for Prefix {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -251,7 +251,7 @@ impl Node for Infix {
     }
 }
 impl Infix {
-    pub fn expression_node(&self) -> () {}
+    pub fn expression_node(&self)  {}
 }
 impl fmt::Display for Infix {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -265,7 +265,7 @@ impl Node for IfExpression {
     }
 }
 impl IfExpression {
-    pub fn expression_node(&self) -> () {}
+    pub fn expression_node(&self)  {}
 }
 impl fmt::Display for IfExpression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -284,7 +284,7 @@ impl Node for BlockStatement {
     }
 }
 impl BlockStatement {
-    pub fn statement_node(&self) -> () {}
+    pub fn statement_node(&self)  {}
 }
 impl fmt::Display for BlockStatement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

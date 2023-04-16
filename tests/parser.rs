@@ -19,7 +19,7 @@ struct Prefix<'a, T> {
 }
 
 #[test]
-fn test_let_statements() -> () {
+fn test_let_statements()  {
     let input: &str = "
 let x = 5;
 let y = 10;
@@ -64,7 +64,7 @@ let foobar = 838383;
 }
 
 #[test]
-fn test_return_statements() -> () {
+fn test_return_statements()  {
     let input: &str = "
 return 5;
 return 10;
@@ -94,7 +94,7 @@ return 993322;
 }
 
 #[test]
-fn test_identifier_expression() -> () {
+fn test_identifier_expression()  {
     let input: &str = "foobar;";
 
     let l: Lexer = Lexer::new(input.to_owned());
@@ -125,7 +125,7 @@ fn test_identifier_expression() -> () {
 }
 
 #[test]
-fn test_integer_expression() -> () {
+fn test_integer_expression()  {
     let input: &str = "5;";
 
     let l: Lexer = Lexer::new(input.to_owned());
@@ -155,7 +155,7 @@ fn test_integer_expression() -> () {
     util_test_integer_literal(ident.expression.as_ref().unwrap(), 5);
 }
 #[test]
-fn test_parsing_boolean_expression() -> () {
+fn test_parsing_boolean_expression()  {
     let input: &str = "true;";
 
     let l: Lexer = Lexer::new(input.to_owned());
@@ -185,7 +185,7 @@ fn test_parsing_boolean_expression() -> () {
 }
 
 #[test]
-fn test_parsing_prefix_expression() -> () {
+fn test_parsing_prefix_expression()  {
     let prefix_int_tests: Vec<Prefix<i64>> = vec![
         Prefix {
             input: "!5;",
@@ -291,7 +291,7 @@ fn test_parsing_prefix_expression() -> () {
 }
 
 #[test]
-fn test_parsing_infix_expression() -> () {
+fn test_parsing_infix_expression()  {
     let infix_int_tests: Vec<Infix<i64>> = vec![
         Infix {
             input: "5 + 5;",
@@ -451,7 +451,7 @@ fn test_parsing_infix_expression() -> () {
 }
 
 #[test]
-fn test_operator_precedence_parsing() -> () {
+fn test_operator_precedence_parsing()  {
     let tests: Vec<PrecedenceTest> = vec![
         PrecedenceTest {
             input: "-a * b",
@@ -551,7 +551,7 @@ fn test_operator_precedence_parsing() -> () {
     }
 }
 #[test]
-fn test_if_expression() -> () {
+fn test_if_expression()  {
     let input: &str = "if (x < y) { x }";
     let l: Lexer = Lexer::new(input.to_owned());
     let mut p: Parser = Parser::new(l);
@@ -580,7 +580,7 @@ fn test_if_expression() -> () {
     }
 }
 
-fn util_test_integer_literal(exp: &Expression, value: i64) -> () {
+fn util_test_integer_literal(exp: &Expression, value: i64)  {
     if let Expression::Integer(intg) = exp {
         assert!(
             intg.value == value,
@@ -598,7 +598,7 @@ fn util_test_integer_literal(exp: &Expression, value: i64) -> () {
         panic!("exp should be an Integer");
     };
 }
-fn util_test_identifier(exp: &Expression, value: String) -> () {
+fn util_test_identifier(exp: &Expression, value: String)  {
     if let Expression::Identifier(ident) = exp {
         assert!(
             ident.value == value,
@@ -627,7 +627,7 @@ fn util_test_boolean(exp: &Expression, value: bool) {
         );
     }
 }
-fn check_parser_errors(prs: Parser) -> () {
+fn check_parser_errors(prs: Parser)  {
     let err: Vec<String> = prs.errors();
     for e in err.iter() {
         println!("parser error : {}", e);
