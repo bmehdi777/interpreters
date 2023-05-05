@@ -170,6 +170,55 @@ impl Parser {
         }
         lit
     }
+    fn parse_if_expression(&mut self) -> Expression {
+        let mut expr: Expression; 
+        let tok: Token = self.current_token.clone();
+        if !self.expect_peek(TokenType::LPAREN) {
+            self.errors.push(format!("could not parse {} as a left parenthesis", self.current_token.literal));
+        }
+        self.next_token();
+        
+        let mut condition: Box<Expression>;
+        if let Expression::If(i) = expr {
+            condition = Box::new(self.parse_expression(Precedence::LOWEST).expect("should not be none."));
+        }
+
+        if !self.expect_peek(TokenType::RPAREN) {
+            self.errors.push(format!("could not parse {} as a right parenthesis", self.current_token.literal));
+        }
+        if !self.expect_peek(TokenType::LBRACE) {
+            self.errors.push(format!("could not parse {} as a left brace", self.current_token.literal));
+        }
+        
+        let consequence: BlockStatement;
+        if let Expression::If(i) = expr {
+            consequence = self.parse_block_statement()
+        }
+
+        let mut alternative: BlockStatement;
+        if self.peek_token_is(TokenType::ELSE) {
+            self.next_token();
+            if !self.expect_peek(TokenType::LBRACE) {
+                self.errors.push(format!("could not parse {} as a left brace", self.current_token.literal));
+            }
+            alternative = self.parse_block_statement();
+        }
+
+        Expression::If(IfExpression {
+            token: tok,
+            condition,
+            consequence,
+            alternative,
+        })
+    }
+
+    fn parse_block_statement(&mut self) -> BlockStatement {
+        let tok: Token = self.current_token.clone();
+
+
+        todo!()
+    }
+
     fn parse_prefix_expression(&mut self) -> Expression {
         let cur_tok: Token = self.current_token.clone();
         self.next_token();
@@ -213,6 +262,7 @@ impl Parser {
             TokenType::BANG => Some(Parser::parse_prefix_expression),
             TokenType::MINUS => Some(Parser::parse_prefix_expression),
             TokenType::LPAREN => Some(Parser::parse_grouped_expression),
+            TokenType::IF => Some(Parser::parse_if_expression),
             _ => None,
         }
     }

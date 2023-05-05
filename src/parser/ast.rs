@@ -63,7 +63,7 @@ pub struct IfExpression {
     pub token: Token,
     pub condition: Box<Expression>,
     pub consequence: BlockStatement,
-    pub alternative: Option<BlockStatement>,
+    pub alternative: BlockStatement,
 }
 #[derive(Debug)]
 pub struct BlockStatement {
