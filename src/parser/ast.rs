@@ -17,6 +17,7 @@ pub enum Expression {
     Integer(IntegerLiteral),
     Boolean(Boolean),
     If(IfExpression),
+    Function(Function),
 
     Prefix(Prefix),
     Infix(Infix),
@@ -64,6 +65,12 @@ pub struct IfExpression {
     pub condition: Box<Expression>,
     pub consequence: BlockStatement,
     pub alternative: Option<BlockStatement>,
+}
+#[derive(Debug)]
+pub struct Function {
+    pub token: Token,
+    pub parameters: Vec<Identifier>,
+    pub body: BlockStatement,
 }
 #[derive(Debug)]
 pub struct BlockStatement {
@@ -277,6 +284,25 @@ impl fmt::Display for IfExpression {
 
     }
 }
+
+impl Node for Function {
+    fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+}
+impl Function {
+    pub fn expression_node(&self) {}
+}
+impl fmt::Display for Function {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut params: Vec<String> = Vec::new();
+        for p in self.parameters.iter() {
+            params.push(p.to_string());
+        }
+        write!(f, "{}({}) {}", self.token_literals(), params.join(", "), self.body.to_string())
+    }
+}
+
 
 impl Node for BlockStatement {
     fn token_literals(&self) -> String {
