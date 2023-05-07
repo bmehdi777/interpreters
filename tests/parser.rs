@@ -587,6 +587,43 @@ fn test_if_expression()  {
     }
 }
 
+#[test]
+fn test_if_else_expression() {
+    let input: &str = "if (x < y) { x } else { y }";
+    let l: Lexer = Lexer::new(input.to_owned());
+    let mut p: Parser = Parser::new(l);
+    let program: Program = p.parse_program();
+    check_parser_errors(p);
+
+    assert!(program.statements.len() == 1, "program.statements does not contains {} statements. got={}", 1, program.statements.len());
+    let _statement = program.statements.get(0).expect("shouldn't be none.");
+    assert!(
+        matches!(Statement::Expression, _statement),
+        "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
+        _statement
+        );
+    let ident = if let Statement::Expression(e) = _statement {
+        e
+    } else {
+        panic!("Not an expression");
+    };
+
+    let if_exp: &Expression = ident.expression.as_ref().unwrap();
+    if let Expression::If(i) = if_exp {
+        assert!(i.consequence.statements.len() == 1, "consequence is not 1 statements, got={}", i.consequence.statements.len());
+        let consequence: &Expression = if let Statement::Expression(e) = i.consequence.statements.get(0).expect("Shouldn't be empty") {
+            &e.expression.as_ref().unwrap()
+        } else {
+            panic!("consequence should contain an expression statement")
+        };
+        util_test_identifier(consequence, "x".to_owned());
+        assert!(i.alternative.as_ref().is_some(), "if_exp.alternative was not None");
+        // todo : next part of the consequence.statement[0] test
+    } else {
+        panic!("if_exp not an IfExpression");
+    }
+}
+
 fn util_test_integer_literal(exp: &Expression, value: i64)  {
     if let Expression::Integer(intg) = exp {
         assert!(
