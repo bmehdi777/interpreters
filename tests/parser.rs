@@ -574,7 +574,13 @@ fn test_if_expression()  {
     let if_exp: &Expression = ident.expression.as_ref().unwrap();
     if let Expression::If(i) = if_exp {
         assert!(i.consequence.statements.len() == 1, "consequence is not 1 statements, got={}", i.consequence.statements.len());
-        i.consequence.statements.get(0).expect("Shouldn't be empty");
+        let consequence: &Expression = if let Statement::Expression(e) = i.consequence.statements.get(0).expect("Shouldn't be empty") {
+            &e.expression.as_ref().unwrap()
+        } else {
+            panic!("consequence should contain an expression statement")
+        };
+        util_test_identifier(consequence, "x".to_owned());
+        assert!(i.alternative.as_ref().is_none(), "if_exp.alternative was not None");
         // todo : next part of the consequence.statement[0] test
     } else {
         panic!("if_exp not an IfExpression");

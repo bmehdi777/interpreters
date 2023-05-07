@@ -171,17 +171,13 @@ impl Parser {
         lit
     }
     fn parse_if_expression(&mut self) -> Expression {
-        let mut expr: Expression; 
         let tok: Token = self.current_token.clone();
         if !self.expect_peek(TokenType::LPAREN) {
             self.errors.push(format!("could not parse {} as a left parenthesis", self.current_token.literal));
         }
         self.next_token();
         
-        let mut condition: Box<Expression>;
-        if let Expression::If(i) = expr {
-            condition = Box::new(self.parse_expression(Precedence::LOWEST).expect("should not be none."));
-        }
+        let condition: Box<Expression> = Box::new(self.parse_expression(Precedence::LOWEST).expect("should not be none."));
 
         if !self.expect_peek(TokenType::RPAREN) {
             self.errors.push(format!("could not parse {} as a right parenthesis", self.current_token.literal));
@@ -190,18 +186,17 @@ impl Parser {
             self.errors.push(format!("could not parse {} as a left brace", self.current_token.literal));
         }
         
-        let consequence: BlockStatement;
-        if let Expression::If(i) = expr {
-            consequence = self.parse_block_statement()
-        }
+        let consequence: BlockStatement = self.parse_block_statement();
 
-        let mut alternative: BlockStatement;
+        let alternative: Option<BlockStatement>;
         if self.peek_token_is(TokenType::ELSE) {
             self.next_token();
             if !self.expect_peek(TokenType::LBRACE) {
                 self.errors.push(format!("could not parse {} as a left brace", self.current_token.literal));
             }
-            alternative = self.parse_block_statement();
+            alternative = Some(self.parse_block_statement());
+        } else {
+            alternative = None;
         }
 
         Expression::If(IfExpression {
@@ -213,10 +208,18 @@ impl Parser {
     }
 
     fn parse_block_statement(&mut self) -> BlockStatement {
-        let tok: Token = self.current_token.clone();
+        let token: Token = self.current_token.clone();
+        let mut statements: Vec<Statement> = Vec::new();
 
+        self.next_token();
 
-        todo!()
+        while !self.current_token_is(TokenType::RBRACE)  && !self.current_token_is(TokenType::EOF) {
+            statements.push(self.parse_statement().unwrap());
+            self.next_token();
+        }
+
+        BlockStatement { token, statements }
+
     }
 
     fn parse_prefix_expression(&mut self) -> Expression {
