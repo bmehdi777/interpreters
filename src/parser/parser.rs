@@ -289,6 +289,29 @@ impl Parser {
         }
         exp.expect("exp should not be empty")
     }
+    fn parse_call_expression(&mut self, function: Expression) -> Expression {
+        Expression::Call(Call { token: self.current_token.clone(), function: Box::new(function), arguments: self.parse_call_arguments()})
+    }
+    fn parse_call_arguments(&mut self) -> Vec<Expression> {
+        let mut args: Vec<Expression> = Vec::new();
+        if self.peek_token_is(TokenType::RPAREN) {
+            self.next_token();
+            return args;
+        }
+        self.next_token();
+        args.push(self.parse_expression(Precedence::LOWEST).unwrap());
+
+        while self.peek_token_is(TokenType::COMMA) {
+            self.next_token();
+            self.next_token();
+            args.push(self.parse_expression(Precedence::LOWEST).unwrap());
+        }
+
+        if !self.expect_peek(TokenType::RPAREN) {
+            panic!("Should have a rparen");
+        }
+        args
+    }
 
     fn prefix_call(&self, token_type: &TokenType) -> Option<PrefixParseFn> {
         match token_type {
@@ -313,6 +336,7 @@ impl Parser {
             TokenType::NOTEQ => Some(Parser::parse_infix_expression),
             TokenType::LT => Some(Parser::parse_infix_expression),
             TokenType::GT => Some(Parser::parse_infix_expression),
+            TokenType::LPAREN => Some(Parser::parse_call_expression),
             _ => None,
         }
     }
@@ -369,6 +393,7 @@ impl Parser {
             TokenType::MINUS => Precedence::SUM,
             TokenType::SLASH => Precedence::PRODUCT,
             TokenType::ASTERISK => Precedence::PRODUCT,
+            TokenType::LPAREN => Precedence::CALL,
             _ => Precedence::LOWEST,
         }
     }
