@@ -206,6 +206,39 @@ impl Parser {
             alternative,
         })
     }
+    fn parse_func_expression(&mut self) -> Expression {
+        let token = self.current_token.clone();
+        if !self.expect_peek(TokenType::LPAREN) {
+            self.errors.push(format!("could not parse {} as a right parenthesis", self.current_token.literal));
+        }
+        let parameters = self.parse_func_parameters();
+        if !self.expect_peek(TokenType::LBRACE) {
+            self.errors.push(format!("could not parse {} as a left brace", self.current_token.literal));
+        }
+        let body = self.parse_block_statement();
+        Expression::Function(Function { token, parameters, body })
+    }
+    fn parse_func_parameters(&mut self) -> Vec<Identifier> {
+        let mut idents: Vec<Identifier> = Vec::new();
+        if self.peek_token_is(TokenType::RPAREN) {
+            self.next_token();
+            return idents;
+        }
+        self.next_token();
+        idents.push(Identifier {token: self.current_token.clone(), value: self.current_token.literal.clone()});
+        while self.peek_token_is(TokenType::COMMA) {
+            self.next_token();
+            self.next_token();
+            idents.push(Identifier {token: self.current_token.clone(), value: self.current_token.literal.clone()});
+        }
+
+        if !self.expect_peek(TokenType::RPAREN) {
+            panic!("should be a rparen")
+        }
+
+        idents
+
+    }
 
     fn parse_block_statement(&mut self) -> BlockStatement {
         let token: Token = self.current_token.clone();
@@ -266,6 +299,7 @@ impl Parser {
             TokenType::MINUS => Some(Parser::parse_prefix_expression),
             TokenType::LPAREN => Some(Parser::parse_grouped_expression),
             TokenType::IF => Some(Parser::parse_if_expression),
+            TokenType::FUNCTION => Some(Parser::parse_func_expression),
             _ => None,
         }
     }
