@@ -623,6 +623,7 @@ fn test_if_else_expression() {
     }
 }
 
+#[test]
 fn test_function_literal() {
     let input: &str = "fn(x, y) { x + y; }";
     let l: Lexer = Lexer::new(input.to_owned());
@@ -647,17 +648,34 @@ fn test_function_literal() {
     };
 
     let func: &Expression = ident.expression.as_ref().unwrap();
-    if let Expression::Function(f) = if_exp {
+    if let Expression::Function(f) = func {
         assert!(f.parameters.len() == 2, "function literal parameters wrong, want 2. got={}", f.parameters.len());
 
         // test literal expression
 
         assert!(f.body.statements.len() == 1, "f.body.statement has not 1 statement, got={}", f.body.statements.len());
-        // todo : test if body statement has statements
+
+        let body = f.body.statements.get(0).expect("f.body.statement.get(0) should not be null");
+        if let Statement::Expression(body_expr) = body {
+            let infix_exp: &Expression = body_expr.expression.as_ref().unwrap();
+            if let Expression::Infix(p) = infix_exp {
+                assert!(
+                    p.operator == "+",
+                    "prfx_exp.operator is not '{}'. got={}",
+                    "+",
+                    p.operator
+                    );
+                util_test_identifier(&*p.left, "x".into());
+                util_test_identifier(&*p.right, "y".into());
+            } else {
+                panic!("Couldn't parse expression to expression::prefix")
+            }
+        }
     } else {
         panic!("func not an Function");
     }
 }
+
 
 fn util_test_integer_literal(exp: &Expression, value: i64)  {
     if let Expression::Integer(intg) = exp {

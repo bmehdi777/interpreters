@@ -44,8 +44,7 @@ pub struct LetStatement {
     pub name: Option<Identifier>,
     pub value: Option<Expression>,
 }
-#[derive(Debug)]
-pub struct ReturnStatement {
+#[derive(Debug)] pub struct ReturnStatement {
     pub token: Token,
     pub return_value: Option<Expression>,
 }
@@ -124,6 +123,7 @@ impl fmt::Display for Expression {
             Expression::If(i) => i.fmt(f),
             Expression::Prefix(p) => p.fmt(f),
             Expression::Infix(i) => i.fmt(f),
+            Expression::Function(fct) => fct.fmt(f),
         }
     }
 }
