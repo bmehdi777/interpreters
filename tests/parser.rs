@@ -676,6 +676,61 @@ fn test_function_literal() {
     }
 }
 
+#[test]
+fn test_call_expression() {
+    let input = "add(1, 2 * 3, 4 + 5)";
+    let l: Lexer = Lexer::new(input.to_owned());
+    let mut p: Parser = Parser::new(l);
+    let program: Program = p.parse_program();
+    check_parser_errors(p);
+
+
+    assert!(program.statements.len() == 1, "program.statements does not contains {} statements. got={}", 1, program.statements.len());
+    let _statement = program.statements.get(0).expect("shouldn't be none.");
+    assert!(
+        matches!(Statement::Expression, _statement),
+        "program.statements[0] is not an ast.ExpressionStatement. got={:?}",
+        _statement
+        );
+
+
+    let ident = if let Statement::Expression(e) = _statement {
+        e
+    } else {
+        panic!("Not an expression");
+    };
+    let call_exp = ident.expression.as_ref().unwrap();
+    if let Expression::Call(c) = call_exp {
+        util_test_identifier(&c.function, "add".into());
+        assert!(c.arguments.len() == 3, "wrong length of arguments. got = {}", c.arguments.len());
+        if let Expression::Integer(i) = c.arguments.get(0).expect("c.arguments.get(0) should exist") {
+            assert!(i.value == 1, "Should be equals to 1");
+        }
+        if let Expression::Infix(p) = c.arguments.get(1).expect("c.arguments.get(1) should exist") {
+            assert!(
+                p.operator == "*",
+                "prfx_exp.operator is not '{}'. got={}",
+                "*",
+                p.operator
+                );
+            util_test_identifier(&*p.left, 2.to_string());
+            util_test_identifier(&*p.right, 3.to_string());
+        }
+        if let Expression::Infix(p) = c.arguments.get(2).expect("c.arguments.get(2) should exist") {
+            assert!(
+                p.operator == "+",
+                "prfx_exp.operator is not '{}'. got={}",
+                "+",
+                p.operator
+                );
+            util_test_identifier(&*p.left, 4.to_string());
+            util_test_identifier(&*p.right, 5.to_string());
+        }
+    } else {
+        panic!("call_exp not an CallExpression");
+    }
+}
+
 
 fn util_test_integer_literal(exp: &Expression, value: i64)  {
     if let Expression::Integer(intg) = exp {

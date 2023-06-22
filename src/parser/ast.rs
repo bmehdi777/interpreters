@@ -18,6 +18,7 @@ pub enum Expression {
     Boolean(Boolean),
     If(IfExpression),
     Function(Function),
+    Call(Call),
 
     Prefix(Prefix),
     Infix(Infix),
@@ -37,6 +38,12 @@ pub struct ExpressionStatement {
 #[derive(Debug)]
 pub struct Program {
     pub statements: Vec<Statement>,
+}
+#[derive(Debug)]
+pub struct Call {
+    pub token: Token,
+    pub function: Box<Expression>,
+    pub arguments: Vec<Expression>,
 }
 #[derive(Debug)]
 pub struct LetStatement {
@@ -124,6 +131,7 @@ impl fmt::Display for Expression {
             Expression::Prefix(p) => p.fmt(f),
             Expression::Infix(i) => i.fmt(f),
             Expression::Function(fct) => fct.fmt(f),
+            Expression::Call(c) => c.fmt(f),
         }
     }
 }
@@ -282,6 +290,20 @@ impl fmt::Display for IfExpression {
             write!(f, "if {} {}",self.condition, self.consequence)
         }
 
+    }
+}
+
+impl Node for Call {
+    fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+}
+impl Call {
+    pub fn expression_node(&self) {}
+}
+impl fmt::Display for Call {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}({})", self.function, self.arguments.iter().map(|arg| arg.to_string()).collect::<Vec<String>>().join(", "))
     }
 }
 
