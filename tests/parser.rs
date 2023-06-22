@@ -713,8 +713,8 @@ fn test_call_expression() {
                 "*",
                 p.operator
                 );
-            util_test_identifier(&*p.left, 2.to_string());
-            util_test_identifier(&*p.right, 3.to_string());
+            util_test_integer_literal(&*p.left, 2);
+            util_test_integer_literal(&*p.right, 3);
         }
         if let Expression::Infix(p) = c.arguments.get(2).expect("c.arguments.get(2) should exist") {
             assert!(
@@ -723,8 +723,8 @@ fn test_call_expression() {
                 "+",
                 p.operator
                 );
-            util_test_identifier(&*p.left, 4.to_string());
-            util_test_identifier(&*p.right, 5.to_string());
+            util_test_integer_literal(&*p.left, 4);
+            util_test_integer_literal(&*p.right, 5);
         }
     } else {
         panic!("call_exp not an CallExpression");
