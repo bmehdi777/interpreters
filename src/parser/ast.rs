@@ -17,6 +17,8 @@ pub enum Expression {
     Integer(IntegerLiteral),
     Boolean(Boolean),
     If(IfExpression),
+    Function(Function),
+    Call(Call),
 
     Prefix(Prefix),
     Infix(Infix),
@@ -38,13 +40,18 @@ pub struct Program {
     pub statements: Vec<Statement>,
 }
 #[derive(Debug)]
+pub struct Call {
+    pub token: Token,
+    pub function: Box<Expression>,
+    pub arguments: Vec<Expression>,
+}
+#[derive(Debug)]
 pub struct LetStatement {
     pub token: Token,
     pub name: Option<Identifier>,
     pub value: Option<Expression>,
 }
-#[derive(Debug)]
-pub struct ReturnStatement {
+#[derive(Debug)] pub struct ReturnStatement {
     pub token: Token,
     pub return_value: Option<Expression>,
 }
@@ -64,6 +71,12 @@ pub struct IfExpression {
     pub condition: Box<Expression>,
     pub consequence: BlockStatement,
     pub alternative: Option<BlockStatement>,
+}
+#[derive(Debug)]
+pub struct Function {
+    pub token: Token,
+    pub parameters: Vec<Identifier>,
+    pub body: BlockStatement,
 }
 #[derive(Debug)]
 pub struct BlockStatement {
@@ -117,6 +130,8 @@ impl fmt::Display for Expression {
             Expression::If(i) => i.fmt(f),
             Expression::Prefix(p) => p.fmt(f),
             Expression::Infix(i) => i.fmt(f),
+            Expression::Function(fct) => fct.fmt(f),
+            Expression::Call(c) => c.fmt(f),
         }
     }
 }
@@ -277,6 +292,39 @@ impl fmt::Display for IfExpression {
 
     }
 }
+
+impl Node for Call {
+    fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+}
+impl Call {
+    pub fn expression_node(&self) {}
+}
+impl fmt::Display for Call {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}({})", self.function, self.arguments.iter().map(|arg| arg.to_string()).collect::<Vec<String>>().join(", "))
+    }
+}
+
+impl Node for Function {
+    fn token_literals(&self) -> String {
+        self.token.literal.to_owned()
+    }
+}
+impl Function {
+    pub fn expression_node(&self) {}
+}
+impl fmt::Display for Function {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut params: Vec<String> = Vec::new();
+        for p in self.parameters.iter() {
+            params.push(p.to_string());
+        }
+        write!(f, "{}({}) {}", self.token_literals(), params.join(", "), self.body.to_string())
+    }
+}
+
 
 impl Node for BlockStatement {
     fn token_literals(&self) -> String {

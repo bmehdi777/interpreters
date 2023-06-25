@@ -174,6 +174,91 @@ impl Parser {
         }
         lit
     }
+    fn parse_if_expression(&mut self) -> Expression {
+        let tok: Token = self.current_token.clone();
+        if !self.expect_peek(TokenType::LPAREN) {
+            self.errors.push(format!("could not parse {} as a left parenthesis", self.current_token.literal));
+        }
+        self.next_token();
+        
+        let condition: Box<Expression> = Box::new(self.parse_expression(Precedence::LOWEST).expect("should not be none."));
+
+        if !self.expect_peek(TokenType::RPAREN) {
+            self.errors.push(format!("could not parse {} as a right parenthesis", self.current_token.literal));
+        }
+        if !self.expect_peek(TokenType::LBRACE) {
+            self.errors.push(format!("could not parse {} as a left brace", self.current_token.literal));
+        }
+        
+        let consequence: BlockStatement = self.parse_block_statement();
+
+        let alternative: Option<BlockStatement>;
+        if self.peek_token_is(TokenType::ELSE) {
+            self.next_token();
+            if !self.expect_peek(TokenType::LBRACE) {
+                self.errors.push(format!("could not parse {} as a left brace", self.current_token.literal));
+            }
+            alternative = Some(self.parse_block_statement());
+        } else {
+            alternative = None;
+        }
+
+        Expression::If(IfExpression {
+            token: tok,
+            condition,
+            consequence,
+            alternative,
+        })
+    }
+    fn parse_func_expression(&mut self) -> Expression {
+        let token = self.current_token.clone();
+        if !self.expect_peek(TokenType::LPAREN) {
+            self.errors.push(format!("could not parse {} as a right parenthesis", self.current_token.literal));
+        }
+        let parameters = self.parse_func_parameters();
+        if !self.expect_peek(TokenType::LBRACE) {
+            self.errors.push(format!("could not parse {} as a left brace", self.current_token.literal));
+        }
+        let body = self.parse_block_statement();
+        Expression::Function(Function { token, parameters, body })
+    }
+    fn parse_func_parameters(&mut self) -> Vec<Identifier> {
+        let mut idents: Vec<Identifier> = Vec::new();
+        if self.peek_token_is(TokenType::RPAREN) {
+            self.next_token();
+            return idents;
+        }
+        self.next_token();
+        idents.push(Identifier {token: self.current_token.clone(), value: self.current_token.literal.clone()});
+        while self.peek_token_is(TokenType::COMMA) {
+            self.next_token();
+            self.next_token();
+            idents.push(Identifier {token: self.current_token.clone(), value: self.current_token.literal.clone()});
+        }
+
+        if !self.expect_peek(TokenType::RPAREN) {
+            panic!("should be a rparen")
+        }
+
+        idents
+
+    }
+
+    fn parse_block_statement(&mut self) -> BlockStatement {
+        let token: Token = self.current_token.clone();
+        let mut statements: Vec<Statement> = Vec::new();
+
+        self.next_token();
+
+        while !self.current_token_is(TokenType::RBRACE)  && !self.current_token_is(TokenType::EOF) {
+            statements.push(self.parse_statement().unwrap());
+            self.next_token();
+        }
+
+        BlockStatement { token, statements }
+
+    }
+
     fn parse_prefix_expression(&mut self) -> Expression {
         let cur_tok: Token = self.current_token.clone();
         self.next_token();
@@ -208,6 +293,29 @@ impl Parser {
         }
         exp.expect("exp should not be empty")
     }
+    fn parse_call_expression(&mut self, function: Expression) -> Expression {
+        Expression::Call(Call { token: self.current_token.clone(), function: Box::new(function), arguments: self.parse_call_arguments()})
+    }
+    fn parse_call_arguments(&mut self) -> Vec<Expression> {
+        let mut args: Vec<Expression> = Vec::new();
+        if self.peek_token_is(TokenType::RPAREN) {
+            self.next_token();
+            return args;
+        }
+        self.next_token();
+        args.push(self.parse_expression(Precedence::LOWEST).unwrap());
+
+        while self.peek_token_is(TokenType::COMMA) {
+            self.next_token();
+            self.next_token();
+            args.push(self.parse_expression(Precedence::LOWEST).unwrap());
+        }
+
+        if !self.expect_peek(TokenType::RPAREN) {
+            panic!("Should have a rparen");
+        }
+        args
+    }
 
     fn prefix_call(&self, token_type: &TokenType) -> Option<PrefixParseFn> {
         match token_type {
@@ -217,6 +325,8 @@ impl Parser {
             TokenType::BANG => Some(Parser::parse_prefix_expression),
             TokenType::MINUS => Some(Parser::parse_prefix_expression),
             TokenType::LPAREN => Some(Parser::parse_grouped_expression),
+            TokenType::IF => Some(Parser::parse_if_expression),
+            TokenType::FUNCTION => Some(Parser::parse_func_expression),
             _ => None,
         }
     }
@@ -230,6 +340,7 @@ impl Parser {
             TokenType::NOTEQ => Some(Parser::parse_infix_expression),
             TokenType::LT => Some(Parser::parse_infix_expression),
             TokenType::GT => Some(Parser::parse_infix_expression),
+            TokenType::LPAREN => Some(Parser::parse_call_expression),
             _ => None,
         }
     }
@@ -286,6 +397,7 @@ impl Parser {
             TokenType::MINUS => Precedence::SUM,
             TokenType::SLASH => Precedence::PRODUCT,
             TokenType::ASTERISK => Precedence::PRODUCT,
+            TokenType::LPAREN => Precedence::CALL,
             _ => Precedence::LOWEST,
         }
     }
