@@ -31,8 +31,6 @@ let foobar = 838383;
     let program: Program = p.parse_program();
     check_parser_errors(p);
 
-    let expected =  todo!();
-
     assert!(
         program.statements.len() == 3,
         "program.statements does not contain 3 statements. got={}",
@@ -61,7 +59,6 @@ let foobar = 838383;
                 tt,
                 l.name.as_ref().unwrap().token_literals()
             );
-            util_test_integer_literal(l.value.as_ref().unwrap(), i.)
         }
     }
 }

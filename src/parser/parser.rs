@@ -134,6 +134,8 @@ impl Parser {
             return None;
         }
 
+        self.next_token();
+
         if let Statement::Let(ref mut st) = stmt {
             (*st).value = self.parse_expression(Precedence::LOWEST);
         }
@@ -144,14 +146,17 @@ impl Parser {
         Some(stmt)
     }
     fn parse_return_statement(&mut self) -> Option<Statement> {
-        let stmt: Statement = Statement::Return(ReturnStatement {
+        let mut stmt: Statement = Statement::Return(ReturnStatement {
             token: self.current_token.clone(),
             return_value: None,
         });
 
         self.next_token();
+         if let Statement::Return(ref mut st) = stmt {
+             (*st).return_value = self.parse_expression(Precedence::LOWEST);
+         }
 
-        while !self.current_token_is(TokenType::SEMICOLON) {
+        if self.peek_token_is(TokenType::SEMICOLON) {
             self.next_token();
         }
 
@@ -344,12 +349,6 @@ impl Parser {
             _ => None,
         }
     }
-
-    /*fn register_call(&mut self, token_type: TokenType)  {
-        match token_type {
-            _ => (),
-        }
-    }*/
 
     fn current_token_is(&self, tok: TokenType) -> bool {
         self.current_token.token_type == tok
