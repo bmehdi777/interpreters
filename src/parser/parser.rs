@@ -134,6 +134,10 @@ impl Parser {
             return None;
         }
 
+        if let Statement::Let(ref mut st) = stmt {
+            (*st).value = self.parse_expression(Precedence::LOWEST);
+        }
+
         while !self.current_token_is(TokenType::SEMICOLON) {
             self.next_token();
         }
